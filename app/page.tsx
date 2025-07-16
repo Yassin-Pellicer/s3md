@@ -2,7 +2,7 @@ import Editor from "./components/editor";
 
 export default function Home() {
   return (
-    <div className="max-w-screen-md mx-auto mt-10 p-8">
+    <div className="max-w-screen-md mx-auto my-10 p-8">
       <div className="flex flex-row align-center gap-4 items-center mb-6">
         <p
           className="material-icons"
