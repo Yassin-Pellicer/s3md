@@ -67,4 +67,5 @@ model Folder {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   route     String
+  name String
 }
