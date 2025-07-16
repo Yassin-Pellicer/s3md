@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
 @import "tailwindcss";
 
 :root {
@@ -23,4 +25,31 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* QUILL SYTYLES */
+
+.ql-container {
+  height: 100% !important;
+  min-height: 400px !important;
+  padding: 25px !important;
+  box-sizing: border-box;
+  height: 100%;
+  margin: 0;
+  font-family: 'Merriweather', serif !important;
+  font-size: 16px !important;
+  position: relative;
+  border-bottom-left-radius: 14px !important;
+  border-bottom-right-radius: 14px !important;
+}
+
+.ql-editor img {
+  display: block !important;
+  margin: 0 auto !important;
+}
+
+.ql-toolbar.ql-snow {
+  padding: 16px !important;
+  border-top-left-radius: 14px !important;
+  border-top-right-radius: 14px !important;
 }
