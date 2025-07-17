@@ -59,7 +59,7 @@ model Post {
   title String
   description String
   subjects Subject[]
-  banner  String
+  imgurl  String
 }
 
 model Folder {

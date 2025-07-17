@@ -21,7 +21,7 @@ export default function QuillEditor() {
             </div>
             <input
               type="text"
-              value={editorStore.title || ""}
+              value={editorStore.post.title || ""}
               onChange={(e) => editorStore.setTitle(e.target.value)}
               placeholder="Add a title here..."
               className="text-sm border-[1px] p-2 rounded-xl w-full"
@@ -37,7 +37,7 @@ export default function QuillEditor() {
             </div>
             <input
               type="text"
-              value={editorStore.description || ""}
+              value={editorStore.post.description || ""}
               onChange={(e) => editorStore.setDescription(e.target.value)}
               placeholder="Add a short description here..."
               className="border-[1px] p-2 text-sm rounded-xl w-full"
@@ -77,9 +77,9 @@ export default function QuillEditor() {
         <div ref={editorHooks.quillRef} />
       </div>
       <button
-        disabled={editorStore.uploading || !editorHooks.quill}
+        disabled={editorStore.uploading}
         onClick={() => {
-          editorHooks.uploadContent(editorHooks.quill);
+          editorHooks.uploadContent();
         }}
         className={`py-2 px-4 rounded-xl w-full font-bold mt-4 border-[1px] transition duration-100
           ${

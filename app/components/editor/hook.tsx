@@ -1,9 +1,11 @@
 import { useEffect } from "react";
 import { useQuill } from "react-quilljs";
 import { useEditorStore } from "../../contexts/editor.store";
+import { uploadPostAction } from "@/app/server/upload.action";
 
 export const hooks = () => {
   const editorStore = useEditorStore();
+
   const { quill, quillRef } = useQuill({
     modules: {
       toolbar: [
@@ -20,58 +22,48 @@ export const hooks = () => {
   });
 
   useEffect(() => {
-    if (quill) {
-      const editorContainer = quill.root;
-
-      const onDrop = (e: DragEvent) => {
-        e.preventDefault();
-        const files = e.dataTransfer?.files;
-        if (files?.length) {
-          Array.from(files).forEach((file) => {
-            if (file.type.startsWith("image/")) {
-              const reader = new FileReader();
-              reader.onload = () => {
-                const range = quill.getSelection();
-                quill.insertEmbed(range?.index || 0, "image", reader.result);
-              };
-              reader.readAsDataURL(file);
-            }
-          });
-        }
-      };
-
-      editorContainer.addEventListener("drop", onDrop);
-      return () => editorContainer.removeEventListener("drop", onDrop);
-    }
+    const editorContainer = quill?.root;
+    const onDrop = (e: DragEvent) => {
+      e.preventDefault();
+      const files = e.dataTransfer?.files;
+      if (files?.length) {
+        Array.from(files).forEach((file) => {
+          if (file.type.startsWith("image/")) {
+            const reader = new FileReader();
+            reader.onload = () => {
+              const range = quill?.getSelection();
+              quill?.insertEmbed(range?.index || 0, "image", reader.result);
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+      }
+    };
+    editorContainer?.addEventListener("drop", onDrop);
+    return () => editorContainer?.removeEventListener("drop", onDrop);
   }, [quill]);
 
-  const uploadContent = async (quill: any) => {
-    if (!quill || !quill.root) {
-      editorStore.setError("Editor not ready");
-      return;
-    }
+  const uploadContent = async () => {
 
     editorStore.setUploading(true);
     editorStore.setError(null);
+    editorStore.setCreatedAt(new Date());
+    editorStore.setRoute("html-documents/");
 
     try {
-      const htmlContent = quill.root.innerHTML;
-      const blob = new Blob([htmlContent], { type: "text/html" });
       const formData = new FormData();
+
+      const htmlContent = quill?.root?.innerHTML || "";
+      const blob = new Blob([htmlContent], { type: "text/html" });
       formData.append("file", blob, "content.html");
+      formData.append("post", JSON.stringify(editorStore.post));
+      formData.append("image", editorStore.image || "");
 
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error("Upload failed");
-      }
+      await uploadPostAction(formData);
 
       alert("Upload successful!");
     } catch (err: any) {
-      editorStore.setError(err.message || "Unknown error");
+      editorStore.setError(err.message);
     } finally {
       editorStore.setUploading(false);
     }

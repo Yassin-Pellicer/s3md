@@ -1,0 +1,78 @@
+import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { Readable } from 'stream';
+
+export const s3Client = new S3Client({
+  region: process.env.AWS_REGION!,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+  },
+});
+
+/**
+ * Uploads a file to S3.
+ * @param key - S3 key (e.g. `folder/filename.html`)
+ * @param body - File contents as a Buffer
+ * @param contentType - MIME type of the file (e.g. 'text/html', 'image/png')
+ * @returns The public URL of the uploaded object
+ */
+export async function uploadToS3({
+  key,
+  body,
+  contentType,
+}: {
+  key: string;
+  body: Buffer;
+  contentType: string;
+}): Promise<string> {
+  const bucket = process.env.S3_BUCKET_NAME!;
+  await s3Client.send(
+    new PutObjectCommand({
+      Bucket: bucket,
+      Key: key,
+      Body: body,
+      ContentType: contentType,
+    })
+  );
+
+  return `https://${bucket}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+}
+
+/**
+ * Retrieves an object from S3 and returns it as a Buffer.
+ * @param key - The S3 object key (e.g. 'html-documents/file.html')
+ * @returns Object containing buffer, contentType, and contentLength
+ */
+export async function getFromS3(key: string): Promise<{
+  buffer: Buffer;
+  contentType: string;
+  contentLength?: number;
+}> {
+  const bucket = process.env.S3_BUCKET_NAME!;
+
+  const command = new GetObjectCommand({
+    Bucket: bucket,
+    Key: key,
+  });
+
+  const response = await s3Client.send(command);
+
+  if (!response.Body) {
+    throw new Error('No body returned from S3');
+  }
+
+  const stream = response.Body as Readable;
+  const chunks: Buffer[] = [];
+
+  for await (const chunk of stream) {
+    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+  }
+
+  const buffer = Buffer.concat(chunks);
+
+  return {
+    buffer,
+    contentType: response.ContentType || 'application/octet-stream',
+    contentLength: response.ContentLength,
+  };
+}
