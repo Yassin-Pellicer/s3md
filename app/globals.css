@@ -31,8 +31,8 @@ body {
 
 .ql-container {
   height: 100% !important;
-  min-height: 400px !important;
-  padding: 25px !important;
+  min-height: 300px !important;
+  padding: 10px !important;
   box-sizing: border-box;
   height: 100%;
   margin: 0;

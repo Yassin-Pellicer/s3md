@@ -1,11 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useQuill } from "react-quilljs";
-import "quill/dist/quill.snow.css";
+import { useEditorStore } from "../../contexts/editor.store";
 
-export const useEditor = () => {
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
+export const hooks = () => {
+  const editorStore = useEditorStore();
   const { quill, quillRef } = useQuill({
     modules: {
       toolbar: [
@@ -49,12 +47,12 @@ export const useEditor = () => {
 
   const uploadContent = async (quill: any) => {
     if (!quill || !quill.root) {
-      setError("Editor not ready");
+      editorStore.setError("Editor not ready");
       return;
     }
 
-    setUploading(true);
-    setError(null);
+    editorStore.setUploading(true);
+    editorStore.setError(null);
 
     try {
       const htmlContent = quill.root.innerHTML;
@@ -73,17 +71,15 @@ export const useEditor = () => {
 
       alert("Upload successful!");
     } catch (err: any) {
-      setError(err.message || "Unknown error");
+      editorStore.setError(err.message || "Unknown error");
     } finally {
-      setUploading(false);
+      editorStore.setUploading(false);
     }
   };
 
   return {
-    quill,
-    quillRef,
     uploadContent,
-    uploading,
-    error,
+    quillRef,
+    quill,
   };
 };

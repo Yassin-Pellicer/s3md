@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
 import "quill/dist/quill.snow.css";
-import { useEditor } from "./hook";
+import { hooks } from "./hook";
+import { useEditorStore } from "../../contexts/editor.store";
 
 export default function QuillEditor() {
-  const { uploadContent, uploading, error, quillRef, quill } = useEditor();
+  const editorHooks = hooks();
+  const editorStore = useEditorStore();
 
   return (
     <>
@@ -20,7 +21,10 @@ export default function QuillEditor() {
             </div>
             <input
               type="text"
-              className="border-[1px] p-2 rounded-xl w-full"
+              value={editorStore.title || ""}
+              onChange={(e) => editorStore.setTitle(e.target.value)}
+              placeholder="Add a title here..."
+              className="text-sm border-[1px] p-2 rounded-xl w-full"
             ></input>
           </div>
 
@@ -33,8 +37,10 @@ export default function QuillEditor() {
             </div>
             <input
               type="text"
+              value={editorStore.description || ""}
+              onChange={(e) => editorStore.setDescription(e.target.value)}
               placeholder="Add a short description here..."
-              className="border-[1px] p-2 rounded-xl w-full"
+              className="border-[1px] p-2 text-sm rounded-xl w-full"
             ></input>
           </div>
 
@@ -45,36 +51,48 @@ export default function QuillEditor() {
               </i>
               <p className="text-xl ">Upload banner</p>
             </div>
-            <label className="flex flex-col items-center justify-center border-[1px] border-dashed border-gray-400 py-2 rounded-lg cursor-pointer hover:bg-gray-100">
+            <label className="flex flex-col items-center justify-center border-[1px] border-dashed border-gray-400 py-1 rounded-lg cursor-pointer hover:bg-gray-100">
               <div className="flex flex-row items-center gap-2">
-                <i className="material-icons" style={{ fontSize: "20px" }}>
-                  add
-                </i>
-                <p className="text-lg font-bold">Add image</p>
+                {editorStore.image ? (
+                  <p className="text-lg font-bold">{editorStore.image.name}</p>
+                ) : (
+                  <>
+                    <i className="material-icons text-lg">add</i>
+                    <p className="text-lg font-bold">Add image</p>
+                  </>
+                )}
               </div>
-              <input type="file" className="hidden" />
+              <input
+                type="file"
+                onChange={(e) =>
+                  editorStore.setImage(e.target.files?.[0] || null)
+                }
+                className="hidden"
+              />
             </label>
           </div>
         </div>
       </div>
       <div style={{ maxWidth: 800, margin: "0 auto" }}>
-        <div ref={quillRef} style={{ height: 400 }} />
+        <div ref={editorHooks.quillRef} />
       </div>
       <button
-        disabled={uploading || !quill}
+        disabled={editorStore.uploading || !editorHooks.quill}
         onClick={() => {
-          uploadContent(quill);
+          editorHooks.uploadContent(editorHooks.quill);
         }}
         className={`py-2 px-4 rounded-xl w-full font-bold mt-4 border-[1px] transition duration-100
           ${
-            uploading
+            editorStore.uploading
               ? "bg-gray-400 cursor-not-allowed text-gray-700"
               : "bg-black text-white hover:cursor-pointer hover:bg-white hover:text-black hover:border-black"
           }`}
       >
-        {uploading ? "Uploading..." : "Publish"}
+        {editorStore.uploading ? "Uploading..." : "Publish"}
       </button>
-      {error && <p className="text-red-600 mt-2">{error}</p>}
+      {editorStore.error && (
+        <p className="text-red-600 mt-2">{editorStore.error}</p>
+      )}
     </>
   );
 }
