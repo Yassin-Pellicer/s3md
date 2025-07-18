@@ -1,10 +1,8 @@
 import folderRepository from "../repositories/folder.repository";
 import postRepository from "../repositories/post.repository";
-import tutorRepository from "../repositories/tutor.repository";
 
 import { Folder } from "../types/Folder";
 import { Post } from "../types/Post";
-import { Tutor } from "../types/Tutor";
 
 export class itemsRepository {
   /**
@@ -17,4 +15,15 @@ export class itemsRepository {
     const posts: Post[] = await postRepository.getPostsFromRoute(route);
     return { folders, posts };
   }
+
+  /**
+   * Create a new post. The post is expected to have a valid route field.
+   * @param post The post to create.
+   * @returns The newly created post.
+   */
+  async createPost(post: Post, image?: Blob, file?: Blob): Promise<Post> {
+    return postRepository.create(post, image, file);
+  }
 }
+
+export default new itemsRepository();

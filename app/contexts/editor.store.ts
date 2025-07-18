@@ -15,10 +15,11 @@ interface EditorState {
   post: Post;
   setCreatedAt: (date: Date) => void;
   setRoute: (route: string) => void;
+  setFullpath: (fullpath: string) => void;
   setTitle: (title: string | undefined) => void;
   setDescription: (description: string | undefined) => void;
   setSubjects: (subjects: Subject[]) => void;
-  setImgUrl: (url: string | undefined) => void;
+  setImgpath: (url: string | undefined) => void;
 }
 
 export const useEditorStore = create<EditorState>((set) => ({
@@ -37,7 +38,6 @@ export const useEditorStore = create<EditorState>((set) => ({
     title: "",
     description: "",
     subjects: undefined,
-    imgurl: "testimage",
   },
 
   setCreatedAt: (date) =>
@@ -45,6 +45,9 @@ export const useEditorStore = create<EditorState>((set) => ({
 
   setRoute: (route) =>
     set((state) => ({ post: { ...state.post, route } })),
+
+  setFullpath: (fullpath) =>
+    set((state) => ({ post: { ...state.post, fullpath } })),
 
   setTitle: (title) =>
     set((state) => ({ post: { ...state.post, title } })),
@@ -55,6 +58,6 @@ export const useEditorStore = create<EditorState>((set) => ({
   setSubjects: (subjects) =>
     set((state) => ({ post: { ...state.post, subjects } })),
 
-  setImgUrl: (imgurl) =>
+  setImgpath: (imgurl) =>
     set((state) => ({ post: { ...state.post, imgurl } })),
 }));

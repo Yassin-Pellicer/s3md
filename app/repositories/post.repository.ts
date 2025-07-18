@@ -1,5 +1,6 @@
-import prisma from '../prisma/client';
-import { Post } from '../types/Post';
+import { uploadToS3 } from "../aws/s3client";
+import prisma from "../prisma/client";
+import { Post } from "../types/Post";
 
 export class PostRepository {
   getAll(): Promise<Post[]> {
@@ -13,8 +14,30 @@ export class PostRepository {
     });
   }
 
-  create(data: any): Promise<Post> {
-    return prisma.post.create({ data });
+  async create(data: any, image?: Blob, file?: Blob): Promise<Post> {
+    const post: Post = await prisma.post.create({ data });
+
+    if (file && file.size > 0) {
+      const htmlBuffer = Buffer.from(await file.arrayBuffer());
+
+      await uploadToS3({
+        key: `${post.route}${post.title}_${post.id}/${post.title}.post`,
+        body: htmlBuffer,
+        contentType: "text/html",
+      });
+    }
+
+    if (image && image.size > 0) {
+      const imageBuffer = Buffer.from(await image.arrayBuffer());
+
+      await uploadToS3({
+        key: `${post.route}${post.title}_${post.id}/${post.title}.img`,
+        body: imageBuffer,
+        contentType: image.type || "image/png", // fallback
+      });
+    }
+
+    return post;
   }
 
   update(id: string, data: any): Promise<Post> {

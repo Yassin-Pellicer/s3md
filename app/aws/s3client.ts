@@ -22,8 +22,8 @@ export async function uploadToS3({
   contentType,
 }: {
   key: string;
-  body: Buffer;
-  contentType: string;
+  body: Buffer | undefined;
+  contentType: string | undefined;
 }): Promise<string> {
   const bucket = process.env.S3_BUCKET_NAME!;
   await s3Client.send(

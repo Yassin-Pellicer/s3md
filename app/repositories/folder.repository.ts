@@ -1,5 +1,6 @@
-import prisma from '../prisma/client';
-import { Folder } from '../types/Folder';
+import { uploadToS3 } from "../aws/s3client";
+import prisma from "../prisma/client";
+import { Folder } from "../types/Folder";
 
 export class FolderRepository {
   getAll(): Promise<Folder[]> {
@@ -10,8 +11,15 @@ export class FolderRepository {
     return prisma.folder.findUnique({ where: { id } });
   }
 
-  create(data: any): Promise<Folder> {
-    return prisma.folder.create({ data });
+  async create(data: any): Promise<Folder> {
+    const folder: Folder = await prisma.folder.create({ data });
+    await uploadToS3({
+      key: `${folder.route}${folder.name}/`,
+      body: undefined,
+      contentType: undefined,
+    });
+
+    return folder;
   }
 
   update(id: string, data: any): Promise<Folder> {
