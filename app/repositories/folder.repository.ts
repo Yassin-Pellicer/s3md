@@ -29,9 +29,9 @@ export class FolderRepository {
   async create(data: any): Promise<Folder> {
     const folder: Folder = await prisma.folder.create({ data });
     await uploadToS3({
-      key: `${folder.route}${folder.name}/`,
-      body: undefined,
-      contentType: undefined,
+      key: `${folder.route}/${folder.name}/`,
+      body: '',
+      contentType: 'application/x-directory'
     });
 
     return folder;

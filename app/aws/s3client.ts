@@ -22,7 +22,7 @@ export async function uploadToS3({
   contentType,
 }: {
   key: string;
-  body: Buffer | undefined;
+  body: Buffer | undefined | string;
   contentType: string | undefined;
 }): Promise<string> {
   const bucket = process.env.S3_BUCKET_NAME!;
