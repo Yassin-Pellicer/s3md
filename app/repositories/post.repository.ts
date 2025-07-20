@@ -3,10 +3,20 @@ import prisma from "../prisma/client";
 import { Post } from "../types/Post";
 
 export class PostRepository {
+  /**
+   * Retrieves all posts.
+   * @returns An array of Post objects, each of which includes their subjects.
+   */
   getAll(): Promise<Post[]> {
     return prisma.post.findMany({ include: { subjects: true } });
   }
 
+  /**
+   * Retrieves a post by ID.
+   * @param id The ID of the post to retrieve.
+   * @returns The post with the given ID, or null if no such post exists. The
+   * returned post includes its subjects.
+   */
   getById(id: string): Promise<Post | null> {
     return prisma.post.findUnique({
       where: { id },
@@ -14,14 +24,27 @@ export class PostRepository {
     });
   }
 
+  /**
+   * Creates a new post. The post is expected to have a valid route field.
+   * The `file` argument is the HTML content of the post, and the `image`
+   * argument is the image associated with the post. Both are optional.
+   * @param data The post data to create.
+   * @param image The image for the post. If provided, the image will be uploaded
+   * to S3 and the post will be updated with the image URL.
+   * @param file The HTML content of the post. If provided, the content will be
+   * uploaded to S3 and the post will be updated with the content URL.
+   * @returns The newly created post.
+   */
   async create(data: any, image?: Blob, file?: Blob): Promise<Post> {
     const post: Post = await prisma.post.create({ data });
+
+    console.log(post);
 
     if (file && file.size > 0) {
       const htmlBuffer = Buffer.from(await file.arrayBuffer());
 
       await uploadToS3({
-        key: `${post.route}${post.title}_${post.id}/${post.title}.post`,
+        key: `${post.route}/${post.title}_${post.id}/${post.title}.post`,
         body: htmlBuffer,
         contentType: "text/html",
       });
@@ -31,7 +54,7 @@ export class PostRepository {
       const imageBuffer = Buffer.from(await image.arrayBuffer());
 
       await uploadToS3({
-        key: `${post.route}${post.title}_${post.id}/${post.title}.img`,
+        key: `${post.route}/${post.title}_${post.id}/${post.title}.img`,
         body: imageBuffer,
         contentType: image.type || "image/png", // fallback
       });
@@ -39,6 +62,13 @@ export class PostRepository {
 
     return post;
   }
+
+  /**
+   * Updates a post with the given ID using the provided data.
+   * @param id The ID of the post to update.
+   * @param data The data to update the post with.
+   * @returns The updated post.
+   */
 
   update(id: string, data: any): Promise<Post> {
     return prisma.post.update({ where: { id }, data });
@@ -48,9 +78,28 @@ export class PostRepository {
     return prisma.post.delete({ where: { id } });
   }
 
-  getPostsFromRoute(route: string): Promise<Post[]> {
-    return prisma.post.findMany({ where: { route } });
+async getPostsFromRoute(route: string): Promise<Post[]> {
+  console.log('Retrieving posts from route:', route);
+  
+  try {
+    // First, let's see all posts to understand what's in the database
+    const allPosts = await prisma.post.findMany();
+    console.log('All posts in database:', allPosts);
+    
+    // Now try the filtered query
+    const posts = await prisma.post.findMany({ 
+      where: { route } 
+    });
+    
+    console.log('Found posts for route:', posts);
+    console.log('Posts count:', posts.length);
+    
+    return posts;
+  } catch (error) {
+    console.error('Database query error:', error);
+    throw error;
   }
+}
 }
 
 export default new PostRepository();

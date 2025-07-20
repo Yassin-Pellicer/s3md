@@ -82,10 +82,9 @@ export default function QuillEditor() {
           editorHooks.uploadContent();
         }}
         className={`py-2 px-4 rounded-xl w-full font-bold mt-4 border-[1px] transition duration-100
-          ${
-            editorStore.uploading
-              ? "bg-gray-400 cursor-not-allowed text-gray-700"
-              : "bg-black text-white hover:cursor-pointer hover:bg-white hover:text-black hover:border-black"
+          ${editorStore.uploading
+            ? "bg-gray-400 cursor-not-allowed text-gray-700"
+            : "bg-black text-white hover:cursor-pointer hover:bg-white hover:text-black hover:border-black"
           }`}
       >
         {editorStore.uploading ? "Uploading..." : "Publish"}

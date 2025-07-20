@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useQuill } from "react-quilljs";
 import { useEditorStore } from "../../contexts/editor.store";
-import { uploadPostAction } from "@/app/server/upload.action";
+import { uploadPostAction } from "@/app/server/item.action";
 
 export const hooks = () => {
   const editorStore = useEditorStore();
@@ -48,7 +48,7 @@ export const hooks = () => {
     editorStore.setUploading(true);
     editorStore.setError(null);
     editorStore.setCreatedAt(new Date());
-    editorStore.setRoute("html-documents/");
+    editorStore.setRoute("AdministradorUsuario");
 
     try {
       const formData = new FormData();
