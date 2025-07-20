@@ -18,6 +18,8 @@ interface ExplorerStore {
   openCreateFolderModal: boolean;
   setOpenCreateFolderModal: (open: boolean) => void;
 
+  baseRoute?: string;
+  setBaseRoute: (route: string) => void;
 }
 
 export const useExplorerStore = create<ExplorerStore>((set, get) => ({
@@ -45,5 +47,8 @@ export const useExplorerStore = create<ExplorerStore>((set, get) => ({
 
   openCreateFolderModal: false,
   setOpenCreateFolderModal: (open: boolean) => set({ openCreateFolderModal: open }),
+
+  baseRoute: "AdministradorUsuario",
+  setBaseRoute: (route) => set({ baseRoute: route }),
 }));
 

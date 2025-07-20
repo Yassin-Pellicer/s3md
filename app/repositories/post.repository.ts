@@ -36,6 +36,7 @@ export class PostRepository {
    * @returns The newly created post.
    */
   async create(data: any, image?: Blob, file?: Blob): Promise<Post> {
+    console.log(data);
     const post: Post = await prisma.post.create({ data });
 
     console.log(post);

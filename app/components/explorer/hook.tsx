@@ -16,7 +16,7 @@ export const hooks = () => {
   // Handle back navigation
   const handleBackClick = () => {
     const pathParts = explorerStore.route.split('/');
-    pathParts.pop();
+    if(pathParts[pathParts.length - 1] != explorerStore.baseRoute)pathParts.pop();
     const parentRoute = pathParts.join('/');
     explorerStore.setRoute(parentRoute || '/');
   };
@@ -29,16 +29,26 @@ export const hooks = () => {
     console.log(folders, posts);
   };
 
-  const addNewFolder = async (folderName: string) => {
-    const newRoute = `${explorerStore.route}/${folderName}`;
-    explorerStore.setRoute(newRoute);
+  const handleBreadcrumbClick = (index: number) => {
+    const pathParts = explorerStore.route.split('/').filter(Boolean);
+    console.log(pathParts);
+    const newPath = pathParts.slice(0, index + 1).join('/');
+    console.log(newPath);
+    explorerStore.setRoute(newPath);
+  };
 
+  const addNewFolder = async (folderName: string) => {
     const formData = new FormData();
     formData.append('name', folderName);
     formData.append('route', explorerStore.route);
 
     await uploadFolderAction(formData);
+    fetchContent(explorerStore.route);
   };
+
+  useEffect(() => {
+    fetchContent(explorerStore.route);
+  }, [explorerStore.route]);
 
   useEffect(() => {
     explorerStore.setRoute("AdministradorUsuario");
@@ -46,6 +56,7 @@ export const hooks = () => {
   }, []);
 
   return {
+    handleBreadcrumbClick,
     addNewFolder,
     fetchContent,
     handleBackClick,

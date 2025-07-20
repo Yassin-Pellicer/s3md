@@ -47,8 +47,13 @@ export const hooks = () => {
 
     editorStore.setUploading(true);
     editorStore.setError(null);
-    editorStore.setCreatedAt(new Date());
-    editorStore.setRoute("AdministradorUsuario");
+    useEditorStore.setState((state) => ({
+      post: {
+        ...state.post,
+        createdAt: new Date(),
+        route: "AdministradorUsuario",
+      },
+    }));
 
     try {
       const formData = new FormData();

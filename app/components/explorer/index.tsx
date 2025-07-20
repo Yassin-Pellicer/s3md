@@ -6,27 +6,21 @@ import { Folder } from "../../types/Folder";
 import { formatDate } from "@/app/funcs/helper.funcs";
 import BreadcrumbNavigator from "../breadcrumbs";
 import CreateFolderModal from "./modal/create/folder";
+import FolderMenu from "./modal/info";
 
-// Combined Item Component
-const ExplorerItem = ({
-  item,
-  onFolderClick
-}: {
-  item: Post | Folder;
-  onFolderClick?: (folderName: string) => void;
-}) => {
-
-  const handleClick = () => {
-    if (onFolderClick) onFolderClick((item as Folder).name ?? '');
-  };
-
+const ExplorerItem = ({ item, onFolderClick }: { item: Post | Folder; onFolderClick?: (folderName: string) => void; }) => {
   const isFolder = 'name' in item;
   const name = isFolder ? (item as Folder).name : (item as Post).title;
   const description = isFolder ? '' : (item as Post).description;
+
+  const handleClick = () => {
+    if (isFolder && onFolderClick) onFolderClick((item as Folder).name ?? '');
+    if (!isFolder) return;
+  };
+
   return (
     <div
-      className="flex items-center px-3 py-1 hover:bg-blue-50 cursor-pointer group transition-colors duration-150 align-center items-center"
-      onClick={handleClick}
+      className="flex px-3 py-1 hover:bg-blue-50 group transition-colors duration-150 align-center items-center"
     >
       <input type="checkbox" className="mr-2"></input>
       {/* Icon */}
@@ -40,7 +34,9 @@ const ExplorerItem = ({
       </div>
 
       {/* Name */}
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 cursor-pointer"
+        onClick={handleClick}
+      >
         <div className="text-sm text-gray-900 truncate font-medium">
           {name}
         </div>
@@ -66,15 +62,11 @@ const ExplorerItem = ({
       </div>
 
       {/* Edit */}
-      <div className="flex-shrink-0 text-right hidden sm:block">
-          <button
-            title="Add new folder"
-            className="bg-transparent rounded-full width-10 height-10 flex items-center justify-center hover:bg-gray-200 ml-4 p-1 hover:cursor-pointer"
-          >
-            <i className="material-symbols-outlined" style={{ fontSize: '20px' }}>more_vert</i>
-          </button>
-      </div>
-
+      <FolderMenu
+        onMove={() => console.log('Move clicked')}
+        onEdit={() => console.log('Edit clicked')}
+        onDelete={() => console.log('Delete clicked')}
+      />
     </div>
   );
 };
@@ -85,7 +77,7 @@ export default function Explorer() {
 
   return (
     <div className="max-w-5xl mx-auto p-4 bg-white min-h-screen">
-      <div className="flex items-center justify-between pb-4 border-b border-gray-200">
+      <div className="flex items-center justify-between pb-4 border-b border-gray-200 wrap flex-wrap">
         <div className="flex-1 flex-col items-center space-x-4 space-y-1 mr-8">
           <div className="flex items-center space-x-2">
             {explorerStore.route && explorerStore.route !== 'AdminstradorUsuario' && (
@@ -99,7 +91,7 @@ export default function Explorer() {
             )}
             <h1 className="text-lg font-semibold text-gray-900">Explorer</h1>
           </div>
-          <BreadcrumbNavigator route={explorerStore.route}></BreadcrumbNavigator>
+          <BreadcrumbNavigator route={explorerStore.route} onClickPart={explorerHooks.handleBreadcrumbClick}></BreadcrumbNavigator>
         </div>
 
         <span className="text-sm text-gray-500 mr-6">
@@ -153,7 +145,7 @@ export default function Explorer() {
       )}
 
       {/* File List */}
-      <div className="bg-white">
+      <div className="bg-white min-h-[500px]">
         {explorerStore.allItems.length > 0 ? (
           <div className="divide-y divide-gray-100">
             {explorerStore.allItems.map((item, type) => (
@@ -175,7 +167,7 @@ export default function Explorer() {
             <p className="text-gray-500 mb-4">This folder appears to be empty</p>
             <button
               onClick={() => explorerHooks.fetchContent(explorerStore.route || "AdminstradorUsuario")}
-              className="bg-transparent text-sm text-black border-[1px] border-black rounded-lg p-2 width-10 height-10 p-1 hover:bg-gray-200 hover:cursor-pointer"
+              className="bg-transparent text-sm text-black border-[1px] border-black rounded-lg p-2 width-10 height-10 hover:bg-gray-200 hover:cursor-pointer"
             >
               Load Content
             </button>
@@ -189,11 +181,7 @@ export default function Explorer() {
           <span>{explorerStore.folders.length} folders</span>
           <span>{explorerStore.posts.length} files</span>
         </div>
-        <div>
-          {explorerStore.route && `Route: ${explorerStore.route}`}
-        </div>
       </div>
-
       <CreateFolderModal open={explorerStore.openCreateFolderModal} onConfirm={explorerHooks.addNewFolder}  ></CreateFolderModal>
     </div>
   );
