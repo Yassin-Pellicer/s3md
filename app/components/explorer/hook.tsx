@@ -11,14 +11,15 @@ export const hooks = () => {
   const handleFolderClick = (folderName: string) => {
     const newRoute = `${explorerStore.route}/${folderName}`;
     explorerStore.setRoute(newRoute);
+    fetchContent(newRoute);
   };
 
-  // Handle back navigation
   const handleBackClick = () => {
     const pathParts = explorerStore.route.split('/');
     if(pathParts[pathParts.length - 1] != explorerStore.baseRoute)pathParts.pop();
     const parentRoute = pathParts.join('/');
-    explorerStore.setRoute(parentRoute || '/');
+    explorerStore.setRoute(parentRoute);
+    fetchContent(parentRoute);
   };
 
   const fetchContent = async (route: string) => {
@@ -26,6 +27,7 @@ export const hooks = () => {
     explorerStore.setFolders(folders);
     explorerStore.setPosts(posts);
     explorerStore.setAllItems(folders, posts);
+    console.log("triggered_wrong")
     console.log(folders, posts);
   };
 
@@ -34,6 +36,7 @@ export const hooks = () => {
     console.log(pathParts);
     const newPath = pathParts.slice(0, index + 1).join('/');
     explorerStore.setRoute(newPath);
+    fetchContent(newPath);
   };
 
   const addNewFolder = async (folderName: string) => {
@@ -45,19 +48,10 @@ export const hooks = () => {
     fetchContent(explorerStore.route);
   };
 
-  const deleteItem = async (id: string) => {
-    await deleteItemAction(id);
+  const deleteItem = async (id: string, type: string | null) => {
+    await deleteItemAction(id, type);
     fetchContent(explorerStore.route);
   }
-
-  useEffect(() => {
-    if (!explorerStore.route) return;
-    fetchContent(explorerStore.route);
-  }, [explorerStore.route]);
-
-  useEffect(() => {
-    explorerStore.setRoute("AdministradorUsuarioRemoto");
-  }, []);
 
   return {
     deleteItem,

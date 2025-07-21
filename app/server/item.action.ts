@@ -77,6 +77,6 @@ export async function getItemsFromRouteAction(route: string) {
   return await itemsServices.getItemsFromRoute(route);
 }
 
-export async function deleteItemAction(id: string) {
-  return await itemsServices.deleteItem(id);
+export async function deleteItemAction(id: string, type: string | null) {
+  return await itemsServices.deleteItem(id, type);
 }

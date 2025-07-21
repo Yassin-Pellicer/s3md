@@ -7,25 +7,18 @@ import { formatDate } from "@/app/funcs/helper.funcs";
 import BreadcrumbNavigator from "../breadcrumbs";
 import CreateFolderModal from "./modal/create/folder";
 import FolderMenu from "./modal/info";
-import DeleteFolderModal from "./modal/delete/folder";
+import DeleteFolderModal from "./modal/delete/item";
 
-const ExplorerItem = ({
-  item,
-  onFolderClick,
-}: {
-  item: Post | Folder;
-  onFolderClick?: (folderName: string) => void;
-}) => {
+const ExplorerItem = ({ item, onFolderClick, type }: { item: Post | Folder; onFolderClick?: (folderName: string) => void; type: "folder" | "post" }) => {
   const explorerHooks = hooks();
   const explorerStore = useExplorerStore();
 
-  const isFolder = "name" in item;
-  const name = isFolder ? (item as Folder).name : (item as Post).title;
-  const description = isFolder ? "" : (item as Post).description;
+  const name = type === "folder" ? (item as Folder).name : (item as Post).title;
+  const description = type === "post" ? "" : (item as Post).description;
 
   const handleClick = () => {
-    if (isFolder && onFolderClick) onFolderClick((item as Folder).name ?? "");
-    if (!isFolder) return;
+    if (type === "folder" && onFolderClick) onFolderClick((item as Folder).name ?? "");
+    if (type === "post") return;
   };
 
   return (
@@ -33,7 +26,7 @@ const ExplorerItem = ({
       <input type="checkbox" className="mr-2"></input>
       {/* Icon */}
       <div className="flex-shrink-0 mr-3 flex items-center">
-        {isFolder ? (
+        {type === "folder" ? (
           <i className="material-icons">folder</i>
         ) : (
           <i className="material-symbols-outlined">article</i>
@@ -43,7 +36,7 @@ const ExplorerItem = ({
       {/* Name */}
       <div className="flex-1 min-w-0 cursor-pointer" onClick={handleClick}>
         <div className="text-sm text-gray-900 truncate font-medium">{name}</div>
-        {!isFolder && description && (
+        {type === "post" && description && (
           <div className="text-xs text-gray-500 truncate">{description}</div>
         )}
       </div>
@@ -51,7 +44,7 @@ const ExplorerItem = ({
       {/* Type */}
       <div className="flex-shrink-0 mx-4 hidden md:block">
         <span className="text-xs text-gray-400 uppercase">
-          {isFolder ? "Folder" : "Post"}
+          {type === "folder" ? "Folder" : "Post"}
         </span>
       </div>
 
@@ -66,14 +59,7 @@ const ExplorerItem = ({
       <FolderMenu
         onMove={() => console.log("Move clicked")}
         onEdit={() => console.log("Edit clicked")}
-        onDelete={() => explorerStore.setOpenDeleteModal(true)}
-      />
-
-      <DeleteFolderModal
-        open={explorerStore.openDeleteModal}
-        onConfirm={() => {
-          if (item.id) explorerHooks.deleteItem(item.id);
-        }}
+        onDelete={() => {explorerStore.setSelectedItem(item, type); explorerStore.setOpenDeleteModal(true)}}
       />
     </div>
   );
@@ -187,13 +173,17 @@ export default function Explorer() {
       <div className="bg-white min-h-[500px]">
         {explorerStore.allItems.length > 0 ? (
           <div className="divide-y divide-gray-100">
-            {explorerStore.allItems.map((item, type) => (
-              <ExplorerItem
-                key={`${type}-${item.id}`}
-                item={item}
-                onFolderClick={explorerHooks.handleFolderClick}
-              />
-            ))}
+            {explorerStore.allItems.map(({ item, type }, index) => {
+              console.log("explorer", { item, type, index });
+              return (
+                <ExplorerItem
+                  key={`${type}-${item.id}-${index}`}
+                  item={item}
+                  type={type}
+                  onFolderClick={explorerHooks.handleFolderClick}
+                />
+              );
+            })}
           </div>
         ) : (
           <div className="text-center py-12 text-gray-500 items-center">
@@ -233,6 +223,20 @@ export default function Explorer() {
         open={explorerStore.openCreateFolderModal}
         onConfirm={explorerHooks.addNewFolder}
       ></CreateFolderModal>
+
+            <DeleteFolderModal
+        open={explorerStore.openDeleteModal}
+        item={explorerStore.selectedItem.item}
+        type={explorerStore.selectedItem.type}
+        onConfirm={() => {
+          if (explorerStore.selectedItem.item) {
+            explorerHooks.deleteItem(
+              explorerStore.selectedItem.item.id!,
+              explorerStore.selectedItem.type
+            );
+          }
+        }}
+      />
     </div>
   );
 }

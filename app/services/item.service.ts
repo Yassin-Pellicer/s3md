@@ -14,7 +14,6 @@ export class itemsService {
   async getItemsFromRoute(route: string): Promise<{ folders: Folder[]; posts: Post[];}> {
     const folders: Folder[] = await folderRepository.getFoldersFromRoute(route);
     const posts: Post[] = await postRepository.getPostsFromRoute(route);
-    console.log(folders, posts);
     return { folders, posts };
   }
 
@@ -37,9 +36,15 @@ export class itemsService {
     return folderRepository.create({ name, route });
   }
 
-  async deleteItem(id: string): Promise<void> {
-    await folderRepository.delete(id);
-    await postRepository.delete(id);
+  /**
+   * Delete an item with the given ID.
+   * @param id The ID of the item to delete.
+   * @param type The type of the item to delete. Must be either "folder" or "post".
+   * @returns A promise that resolves when the item is deleted.
+   */
+  async deleteItem(id: string, type: string | null): Promise<void> {
+    if (type === "folder") await folderRepository.delete(id);
+    if (type === "post") await postRepository.delete(id);
   }
 }
 

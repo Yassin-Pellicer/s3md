@@ -12,7 +12,7 @@ interface ExplorerStore {
   folders: Folder[];
   setFolders: (folders: Folder[]) => void;
 
-  allItems: (Post | Folder)[];
+  allItems: { type: "folder" | "post"; item: Folder | Post }[];
   setAllItems: (allItems: Folder[], posts: Post[]) => void;
 
   openCreateFolderModal: boolean;
@@ -21,12 +21,15 @@ interface ExplorerStore {
   openDeleteModal: boolean;
   setOpenDeleteModal: (open: boolean) => void;
 
+  selectedItem: {item: Folder | Post | null, type: "folder" | "post" | null};
+  setSelectedItem: (item: Folder | Post | null, type: "folder" | "post") => void;
+
   baseRoute?: string;
   setBaseRoute: (route: string) => void;
 }
 
 export const useExplorerStore = create<ExplorerStore>((set, get) => ({
-  route: "",
+  route: "AdministradorUsuario",
   setRoute: (route: string) => set({ route }),
 
   posts: [],
@@ -36,25 +39,37 @@ export const useExplorerStore = create<ExplorerStore>((set, get) => ({
   setFolders: (folders: Folder[]) => set({ folders }),
 
   allItems: [],
-  setAllItems: (folders: Folder[], posts: Post[]) => {
-    const allItems = [...folders, ...posts];
 
-    const sortedItems = allItems.sort((a: Folder | Post, b: Folder | Post) => {
-      if ((a as Folder) && (b as Post)) return -1;
-      if ((a as Post) && (b as Folder)) return 1;
-      else return 0;
+  setAllItems: (folders: Folder[], posts: Post[]) => {
+    const folderItems = folders.map((folder) => ({
+      type: "folder" as const,
+      item: folder,
+    }));
+
+    const postItems = posts.map((post) => ({
+      type: "post" as const,
+      item: post,
+    }));
+
+    const allItems = [...folderItems, ...postItems].sort((a, b) => {
+      if (a.type === "folder" && b.type === "post") return -1;
+      if (a.type === "post" && b.type === "folder") return 1;
+      return 0;
     });
 
-    set({ allItems: sortedItems });
+    set({ allItems });
   },
 
   openCreateFolderModal: false,
-  setOpenCreateFolderModal: (open: boolean) => set({ openCreateFolderModal: open }),
+  setOpenCreateFolderModal: (open: boolean) =>
+    set({ openCreateFolderModal: open }),
 
   openDeleteModal: false,
   setOpenDeleteModal: (open: boolean) => set({ openDeleteModal: open }),
 
-  baseRoute: "AdministradorUsuarioRemoto",
+  selectedItem: {item: null, type: null},
+  setSelectedItem: (item: Folder | Post | null, type: "folder" | "post") => set({ selectedItem: {item, type} }),
+
+  baseRoute: "AdministradorUsuario",
   setBaseRoute: (route) => set({ baseRoute: route }),
 }));
-

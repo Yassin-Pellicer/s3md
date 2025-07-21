@@ -1,4 +1,8 @@
-import { uploadToS3 } from "../aws/s3client";
+import {
+  uploadToS3,
+  deleteFromS3,
+  deleteMultipleFromS3,
+} from "../aws/s3client";
 import prisma from "../prisma/client";
 import { Post } from "../types/Post";
 
@@ -36,10 +40,7 @@ export class PostRepository {
    * @returns The newly created post.
    */
   async create(data: any, image?: Blob, file?: Blob): Promise<Post> {
-    console.log(data);
     const post: Post = await prisma.post.create({ data });
-
-    console.log(post);
 
     if (file && file.size > 0) {
       const htmlBuffer = Buffer.from(await file.arrayBuffer());
@@ -70,37 +71,40 @@ export class PostRepository {
    * @param data The data to update the post with.
    * @returns The updated post.
    */
-
   update(id: string, data: any): Promise<Post> {
     return prisma.post.update({ where: { id }, data });
   }
 
-  delete(id: string): Promise<Post> {
-    return prisma.post.delete({ where: { id } });
+  async delete(id: string): Promise<Post> {
+    const post = await prisma.post.findUnique({ where: { id } });
+    if (!post) throw new Error(`Post with id ${id} not found.`);
+
+    await prisma.post.delete({ where: { id } });
+
+    const s3KeyBase = `${post.route}/${post.title}_${post.id}`;
+    await deleteMultipleFromS3([
+      { Key: `${s3KeyBase}/` },
+      { Key: `${s3KeyBase}/${post.title}.img` },
+      { Key: `${s3KeyBase}/${post.title}.post` },
+    ]);
+
+    return post;
   }
 
-async getPostsFromRoute(route: string): Promise<Post[]> {
-  console.log('Retrieving posts from route:', route);
-  
-  try {
-    // First, let's see all posts to understand what's in the database
-    const allPosts = await prisma.post.findMany();
-    console.log('All posts in database:', allPosts);
-    
-    // Now try the filtered query
-    const posts = await prisma.post.findMany({ 
-      where: { route } 
-    });
-    
-    console.log('Found posts for route:', posts);
-    console.log('Posts count:', posts.length);
-    
-    return posts;
-  } catch (error) {
-    console.error('Database query error:', error);
-    throw error;
+  async getPostsFromRoute(route: string): Promise<Post[]> {
+    try {
+      const allPosts = await prisma.post.findMany();
+
+      const posts = await prisma.post.findMany({
+        where: { route },
+      });
+
+      return posts;
+    } catch (error) {
+      console.error("Database query error:", error);
+      throw error;
+    }
   }
-}
 }
 
 export default new PostRepository();
