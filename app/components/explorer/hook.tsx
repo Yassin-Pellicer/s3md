@@ -33,7 +33,6 @@ export const hooks = () => {
     const pathParts = explorerStore.route.split('/').filter(Boolean);
     console.log(pathParts);
     const newPath = pathParts.slice(0, index + 1).join('/');
-    console.log(newPath);
     explorerStore.setRoute(newPath);
   };
 
@@ -47,12 +46,12 @@ export const hooks = () => {
   };
 
   useEffect(() => {
+    if (!explorerStore.route) return;
     fetchContent(explorerStore.route);
   }, [explorerStore.route]);
 
   useEffect(() => {
-    explorerStore.setRoute("AdministradorUsuario");
-    fetchContent("AdministradorUsuario");
+    explorerStore.setRoute("AdministradorUsuarioRemoto");
   }, []);
 
   return {

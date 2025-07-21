@@ -48,7 +48,7 @@ export const useExplorerStore = create<ExplorerStore>((set, get) => ({
   openCreateFolderModal: false,
   setOpenCreateFolderModal: (open: boolean) => set({ openCreateFolderModal: open }),
 
-  baseRoute: "AdministradorUsuario",
+  baseRoute: "AdministradorUsuarioRemoto",
   setBaseRoute: (route) => set({ baseRoute: route }),
 }));
 

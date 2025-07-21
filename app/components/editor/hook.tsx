@@ -2,9 +2,15 @@ import { useEffect } from "react";
 import { useQuill } from "react-quilljs";
 import { useEditorStore } from "../../contexts/editor.store";
 import { uploadPostAction } from "@/app/server/item.action";
+import { useExplorerStore } from "@/app/contexts/explorer.store";
 
 export const hooks = () => {
   const editorStore = useEditorStore();
+  const explorerStore = useExplorerStore();
+
+  useEffect(() => {
+    editorStore.setRoute(explorerStore.route);
+  }, [explorerStore.route]);
 
   const { quill, quillRef } = useQuill({
     modules: {
@@ -44,16 +50,8 @@ export const hooks = () => {
   }, [quill]);
 
   const uploadContent = async () => {
-
     editorStore.setUploading(true);
     editorStore.setError(null);
-    useEditorStore.setState((state) => ({
-      post: {
-        ...state.post,
-        createdAt: new Date(),
-        route: "AdministradorUsuario",
-      },
-    }));
 
     try {
       const formData = new FormData();

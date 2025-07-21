@@ -183,6 +183,7 @@ export default function Explorer() {
         </div>
       </div>
       <CreateFolderModal open={explorerStore.openCreateFolderModal} onConfirm={explorerHooks.addNewFolder}  ></CreateFolderModal>
+      
     </div>
   );
 }

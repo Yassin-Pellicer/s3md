@@ -15,37 +15,53 @@ const FolderMenu = ({ onMove, onEdit, onDelete }: { onMove: () => void; onEdit: 
       <IconButton onClick={useInfoHooks.handleClick}>
         <i className="material-symbols-outlined text-[20px]">more_vert</i>
       </IconButton>
-      <Menu
-        anchorEl={useInfoHooks.anchorEl}
-        open={useInfoHooks.open}
-        onClose={useInfoHooks.handleClose}
-        PaperProps={{ className: "text-sm" }} // this applies to the whole menu
+<Menu
+  anchorEl={useInfoHooks.anchorEl}
+  open={useInfoHooks.open}
+  onClose={useInfoHooks.handleClose}
+  PaperProps={{
+    className: "!rounded-[12px] pt-[0px]", 
+    elevation: 2,
+  }}
+    MenuListProps={{
+    className: "!p-0",
+  }}
+>
+  <MenuItem onClick={() => useInfoHooks.handleAction(onMove)}>
+    <ListItemIcon>
+      <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+        drive_file_move
+      </span>
+    </ListItemIcon>
+    <ListItemText primary={<span className="text-xs">Move</span>} />
+  </MenuItem>
+
+  <MenuItem onClick={() => useInfoHooks.handleAction(onEdit)}>
+    <ListItemIcon>
+      <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+        edit
+      </span>
+    </ListItemIcon>
+    <ListItemText primary={<span className="text-xs">Edit</span>} />
+  </MenuItem>
+
+  <MenuItem
+    onClick={() => useInfoHooks.handleAction(onDelete)}
+    className="!bg-red-600 hover:!bg-red-700 text-white"
+  >
+    <ListItemIcon>
+      <span
+        className="material-symbols-outlined text-white"
+        style={{ fontSize: '18px' }}
       >
-        <MenuItem onClick={() => useInfoHooks.handleAction(onMove)}>
-          <ListItemIcon>
-            <span className="material-symbols-outlined text-sm">drive_file_move</span>
-          </ListItemIcon>
-          <ListItemText
-            primary={<span className="text-sm">Move</span>}
-          />
-        </MenuItem>
-        <MenuItem onClick={() => useInfoHooks.handleAction(onEdit)}>
-          <ListItemIcon>
-            <span className="material-symbols-outlined text-sm">edit</span>
-          </ListItemIcon>
-          <ListItemText
-            primary={<span className="text-sm">Edit</span>}
-          />
-        </MenuItem>
-        <MenuItem onClick={() => useInfoHooks.handleAction(onDelete)}>
-          <ListItemIcon>
-            <span className="material-symbols-outlined text-sm">delete</span>
-          </ListItemIcon>
-          <ListItemText
-            primary={<span className="text-sm">Delete</span>}
-          />
-        </MenuItem>
-      </Menu>
+        delete
+      </span>
+    </ListItemIcon>
+    <ListItemText primary={<span className="text-xs text-white">Delete</span>} />
+  </MenuItem>
+</Menu>
+
+
     </>
   );
 };
