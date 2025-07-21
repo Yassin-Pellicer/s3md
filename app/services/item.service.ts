@@ -36,6 +36,11 @@ export class itemsService {
   async createFolder(name: String, route: String): Promise<Folder> {
     return folderRepository.create({ name, route });
   }
+
+  async deleteItem(id: string): Promise<void> {
+    await folderRepository.delete(id);
+    await postRepository.delete(id);
+  }
 }
 
 export default new itemsService();

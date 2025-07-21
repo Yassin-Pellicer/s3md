@@ -76,3 +76,7 @@ export async function uploadFolderAction(formData: FormData) {
 export async function getItemsFromRouteAction(route: string) {
   return await itemsServices.getItemsFromRoute(route);
 }
+
+export async function deleteItemAction(id: string) {
+  return await itemsServices.deleteItem(id);
+}

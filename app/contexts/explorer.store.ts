@@ -18,6 +18,9 @@ interface ExplorerStore {
   openCreateFolderModal: boolean;
   setOpenCreateFolderModal: (open: boolean) => void;
 
+  openDeleteModal: boolean;
+  setOpenDeleteModal: (open: boolean) => void;
+
   baseRoute?: string;
   setBaseRoute: (route: string) => void;
 }
@@ -47,6 +50,9 @@ export const useExplorerStore = create<ExplorerStore>((set, get) => ({
 
   openCreateFolderModal: false,
   setOpenCreateFolderModal: (open: boolean) => set({ openCreateFolderModal: open }),
+
+  openDeleteModal: false,
+  setOpenDeleteModal: (open: boolean) => set({ openDeleteModal: open }),
 
   baseRoute: "AdministradorUsuarioRemoto",
   setBaseRoute: (route) => set({ baseRoute: route }),

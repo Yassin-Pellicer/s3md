@@ -1,4 +1,4 @@
-import { getItemsFromRouteAction, uploadFolderAction, uploadPostAction } from "@/app/server/item.action";
+import { getItemsFromRouteAction, uploadFolderAction, uploadPostAction, deleteItemAction } from "@/app/server/item.action";
 import { useEffect } from "react";
 
 import { Folder } from "../../types/Folder";
@@ -45,6 +45,11 @@ export const hooks = () => {
     fetchContent(explorerStore.route);
   };
 
+  const deleteItem = async (id: string) => {
+    await deleteItemAction(id);
+    fetchContent(explorerStore.route);
+  }
+
   useEffect(() => {
     if (!explorerStore.route) return;
     fetchContent(explorerStore.route);
@@ -55,6 +60,7 @@ export const hooks = () => {
   }, []);
 
   return {
+    deleteItem,
     handleBreadcrumbClick,
     addNewFolder,
     fetchContent,
