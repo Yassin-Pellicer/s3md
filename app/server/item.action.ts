@@ -1,8 +1,8 @@
-'use server';
+"use server";
 
-import itemsServices from '../services/item.service';
-import { Folder } from '../types/Folder';
-import { Post } from '../types/Post';
+import itemsServices from "../services/item.service";
+import { Folder } from "../types/Folder";
+import { Post } from "../types/Post";
 
 /**
  * Uploads a post to the server.
@@ -17,22 +17,26 @@ import { Post } from '../types/Post';
  */
 export async function uploadPostAction(formData: FormData) {
   try {
-    const file = formData.get('file') as Blob | null | undefined;
-    const rawPost = formData.get('post') as string | null;
-    const image = formData.get('image') as Blob | undefined;
+    const file = formData.get("file") as Blob | null | undefined;
+    const rawPost = formData.get("post") as string | null;
+    const image = formData.get("image") as Blob | undefined;
 
     if (!file || !rawPost) {
-      throw new Error('Missing required data');
+      throw new Error("Missing required data");
     }
 
-    const savedPost = await itemsServices.createPost(JSON.parse(rawPost), image, file);
+    const savedPost = await itemsServices.createPost(
+      JSON.parse(rawPost),
+      image,
+      file
+    );
 
     return {
       success: true,
       post: savedPost,
     };
   } catch (error: any) {
-    console.error('Upload error:', error);
+    console.error("Upload error:", error);
     return { success: false, error: error.message };
   }
 }
@@ -49,11 +53,11 @@ export async function uploadPostAction(formData: FormData) {
  */
 export async function uploadFolderAction(formData: FormData) {
   try {
-    const name = formData.get('name') as string | null;
-    const route = formData.get('route') as string | null;
+    const name = formData.get("name") as string | null;
+    const route = formData.get("route") as string | null;
 
     if (!name || !route) {
-      throw new Error('Missing required data');
+      throw new Error("Missing required data");
     }
 
     const savedFolder = await itemsServices.createFolder(name, route);
@@ -63,7 +67,7 @@ export async function uploadFolderAction(formData: FormData) {
       folder: savedFolder,
     };
   } catch (error: any) {
-    console.error('Upload error:', error);
+    console.error("Upload error:", error);
     return { success: false, error: error.message };
   }
 }
@@ -79,8 +83,11 @@ export async function getItemsFromRouteAction(route: string) {
   return await itemsServices.getItemsFromRoute(route);
 }
 
-export async function deleteItemsAction(items: {item: Folder | Post | null, type: "folder" | "post" | null}[]) {
+export async function deleteItemsAction(
+  items: { item: Folder | Post | null; type: "folder" | "post" | null }[]
+) {
   items.forEach((element) => {
-    if (element.item && element.type) itemsServices.deleteItem(element.item.id!, element.type);
-  })
+    if (element.item && element.type)
+      itemsServices.deleteItem(element.item.id!, element.type);
+  });
 }

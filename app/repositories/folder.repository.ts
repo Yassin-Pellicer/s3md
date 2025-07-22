@@ -103,14 +103,6 @@ export class FolderRepository {
         : undefined;
     } while (continuationToken);
 
-    await prisma.post.deleteMany({
-      where: {
-        route: {
-          startsWith: `${routePrefix}/`,
-        },
-      },
-    });
-
     await prisma.folder.deleteMany({
       where: {
         route: {
@@ -122,7 +114,6 @@ export class FolderRepository {
     const deletedFolder = await prisma.folder.delete({
       where: { id },
     });
-    console.log(`[DEBUG] Deleted parent folder from database`);
 
     return deletedFolder;
   }

@@ -7,7 +7,7 @@ import { formatDate } from "@/app/funcs/helper.funcs";
 import BreadcrumbNavigator from "../breadcrumbs";
 import CreateFolderModal from "./modal/create/folder";
 import FolderMenu from "./modal/info";
-import DeleteFolderModal from "./modal/delete/item";
+import DeleteItems from "./modal/delete/item";
 
 const ExplorerItem = ({
   item,
@@ -25,14 +25,28 @@ const ExplorerItem = ({
   const description = type === "post" ? "" : (item as Post).description;
 
   const handleClick = () => {
+    if (explorerStore.editorMode) {
+      return;
+    }
     if (type === "folder" && onFolderClick)
       onFolderClick((item as Folder).name ?? "");
     if (type === "post") return;
   };
 
   return (
-    <div className="flex px-3 py-1 hover:bg-blue-50 group transition-colors duration-150 align-center items-center">
-      <input type="checkbox" className="mr-4"></input>
+    <div
+      onClick={() => { if (explorerStore.editorMode) { explorerStore.toggleSelectedItem({ item: item, type: type }) } }}
+      className="flex px-3 py-2 hover:bg-blue-50 group transition-colors duration-150 align-center items-center">
+      {explorerStore.editorMode && (
+        <input
+          type="checkbox"
+          className="mr-4"
+          readOnly
+          checked={explorerStore.selectedItems.some(
+            (selectedItem) => selectedItem.item?.id === item.id
+          )}
+        ></input>
+      )}
       {/* Icon */}
       <div className="flex-shrink-0 mr-3 flex items-center">
         {type === "folder" ? (
@@ -65,14 +79,14 @@ const ExplorerItem = ({
       </div>
 
       {/* Edit */}
-      <FolderMenu
+      {!explorerStore.editorMode && <FolderMenu
         onMove={() => console.log("Move clicked")}
         onEdit={() => console.log("Edit clicked")}
         onDelete={() => {
-          explorerStore.addSelectedItem({item, type});
+          explorerStore.addSelectedItem({ item, type });
           explorerStore.setOpenDeleteModal(true);
         }}
-      />
+      />}
     </div>
   );
 };
@@ -154,8 +168,13 @@ export default function Explorer() {
             </i>
           </button>
           <button
-            title="Add new folder"
-            className="bg-transparent border-[1px] border-black rounded-full width-10 height-10 flex items-center justify-center p-1 hover:bg-gray-200 hover:cursor-pointer"
+            title="Move or delete selected items"
+            onClick={() => explorerStore.setEditorMode(!explorerStore.editorMode)}
+            className={
+              explorerStore.editorMode
+                ? "bg-black text-white border-[1px] border-black rounded-full width-10 height-10 flex items-center justify-center p-1 hover:bg-gray-600 hover:cursor-pointer"
+                : "bg-transparent border-[1px] border-black rounded-full width-10 height-10 flex items-center justify-center p-1 hover:bg-gray-200 hover:cursor-pointer"
+            }
           >
             <i
               className="material-symbols-outlined"
@@ -164,6 +183,13 @@ export default function Explorer() {
               edit
             </i>
           </button>
+          {explorerStore.editorMode && <FolderMenu
+            onMove={() => console.log("Move clicked")}
+            onEdit={() => console.log("Edit clicked")}
+            onDelete={() => {
+              explorerStore.setOpenDeleteModal(true);
+            }}
+          />}
         </div>
       </div>
 
@@ -172,10 +198,9 @@ export default function Explorer() {
         <div className="flex items-center px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-100">
           <div className="flex-1 flex items-center">Resource</div>
           <div className="flex-shrink-0 mx-2 hidden md:block">Type</div>
-          <div className="flex-shrink-0 w-20 mr-4 text-right hidden sm:block">
+          <div className={`flex-shrink-0 w-20 ${!explorerStore.editorMode ? 'mr-7' : 'mr-3'} text-right hidden sm:block`}>
             Modified
           </div>
-          <span className="material-symbols-outlined mr-2">menu</span>
         </div>
       )}
 
@@ -234,7 +259,7 @@ export default function Explorer() {
         onConfirm={explorerHooks.addNewFolder}
       ></CreateFolderModal>
 
-      <DeleteFolderModal
+      <DeleteItems
         open={explorerStore.openDeleteModal}
         items={explorerStore.selectedItems}
         onConfirm={() => {

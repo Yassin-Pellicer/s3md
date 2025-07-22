@@ -3,6 +3,7 @@ import { getItemsFromRouteAction, uploadFolderAction, deleteItemsAction } from "
 import { Folder } from "../../types/Folder";
 import { Post } from "../../types/Post";
 import { useExplorerStore } from "@/app/contexts/explorer.store";
+import { useEffect } from "react";
 
 export const hooks = () => {
   const explorerStore = useExplorerStore();
@@ -15,7 +16,7 @@ export const hooks = () => {
 
   const handleBackClick = () => {
     const pathParts = explorerStore.route.split('/');
-    if(pathParts[pathParts.length - 1] != explorerStore.baseRoute)pathParts.pop();
+    if (pathParts[pathParts.length - 1] != explorerStore.baseRoute) pathParts.pop();
     const parentRoute = pathParts.join('/');
     explorerStore.setRoute(parentRoute);
     fetchContent(parentRoute);
@@ -44,10 +45,22 @@ export const hooks = () => {
     fetchContent(explorerStore.route);
   };
 
-  const deleteItems = async (items: {item: Folder | Post | null, type: "folder" | "post" | null}[]) => {
-    await deleteItemsAction(items);
+  const deleteItems = async (items: { item: Folder | Post | null, type: "folder" | "post" | null }[]) => {
+    try {
+      explorerStore.setSelectedItems([]);
+      await deleteItemsAction(items);
+      setTimeout(async () => {
+        await fetchContent(explorerStore.route);
+      }, 500);
+    } catch (error) {
+      console.error("[ERROR] Failed to delete items:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (explorerStore.route !== explorerStore.baseRoute) return
     fetchContent(explorerStore.route);
-  }
+  }, [])
 
   return {
     deleteItems,

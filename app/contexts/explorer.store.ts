@@ -34,12 +34,25 @@ interface ExplorerStore {
     type: "folder" | "post" | null;
   }) => void;
 
+  removeSelectedItem: (item: {
+    item: Folder | Post | null;
+    type: "folder" | "post" | null;
+  }) => void;
+
+  toggleSelectedItem: (item: {
+    item: Folder | Post | null;
+    type: "folder" | "post" | null;
+  }) => void;
+
   baseRoute?: string;
   setBaseRoute: (route: string) => void;
+
+  editorMode: boolean;
+  setEditorMode: (mode: boolean) => void;
 }
 
 export const useExplorerStore = create<ExplorerStore>((set, get) => ({
-  route: "AdministradorUsuarioRemoto",
+  route: "AdministradorUsuario",
   setRoute: (route: string) => set({ route }),
 
   posts: [],
@@ -86,10 +99,72 @@ export const useExplorerStore = create<ExplorerStore>((set, get) => ({
     item: Folder | Post | null;
     type: "folder" | "post" | null;
   }) =>
-    set((state) => ({
-      selectedItems: [...state.selectedItems, item],
-    })),
+    set((state) => {
+      const alreadySelected = state.selectedItems.some(
+        (selectedItem) =>
+          selectedItem.type === item.type &&
+          selectedItem.item?.id === item.item?.id
+      );
 
-  baseRoute: "AdministradorUsuarioRemoto",
+      if (!alreadySelected) {
+        return {
+          selectedItems: [...state.selectedItems, item],
+        };
+      }
+
+      return state;
+    }),
+
+  removeSelectedItem: (item: {
+    item: Folder | Post | null;
+    type: "folder" | "post" | null;
+  }) =>
+    set((state) => {
+      return {
+        selectedItems: state.selectedItems.filter(
+          (selectedItem) =>
+            !(
+              selectedItem.type === item.type &&
+              selectedItem.item?.id === item.item?.id
+            )
+        ),
+      };
+    }),
+
+  toggleSelectedItem: (item: {
+    item: Folder | Post | null;
+    type: "folder" | "post" | null;
+  }) =>
+    set((state) => {
+      const isSelected = state.selectedItems.some(
+        (selectedItem) =>
+          selectedItem.type === item.type &&
+          selectedItem.item?.id === item.item?.id
+      );
+
+      if (isSelected) {
+        return {
+          selectedItems: state.selectedItems.filter(
+            (selectedItem) =>
+              !(
+                selectedItem.type === item.type &&
+                selectedItem.item?.id === item.item?.id
+              )
+          ),
+        };
+      } else {
+        return {
+          selectedItems: [...state.selectedItems, item],
+        };
+      }
+    }),
+
+  baseRoute: "AdministradorUsuario",
   setBaseRoute: (route) => set({ baseRoute: route }),
+
+  editorMode: false,
+  setEditorMode: (mode: boolean) => set((state) => ({
+    editorMode: mode,
+    selectedItems: mode ? state.selectedItems : []
+  })),
 }));

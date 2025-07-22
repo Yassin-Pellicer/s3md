@@ -18,9 +18,6 @@ export function hooks (onConfirm: () => void) {
 
   const handleClose = () => {
     setFolderName('');
-    setTimeout(() => {
-      explorerStore.setSelectedItems([]);
-    }, 300);
     explorerStore.setOpenDeleteModal(false);
   };
 
