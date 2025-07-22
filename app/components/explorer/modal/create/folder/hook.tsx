@@ -1,28 +1,32 @@
-import { useExplorerStore } from '@/app/contexts/explorer.store';
-import { useState } from 'react';
+import { useExplorerStore } from "@/app/contexts/explorer.store";
+import { use, useEffect, useState } from "react";
 
-export function hooks (onConfirm: (folderName: string) => void) {
-  const [folderName, setFolderName] = useState('');
-  const [error, setError] = useState('');
+export function hooks(onConfirm: (folderName: string) => void) {
+  const [folderName, setFolderName] = useState("");
+  const [error, setError] = useState("");
   const explorerStore = useExplorerStore();
 
   const handleConfirm = () => {
     const trimmed = folderName.trim();
-    if (trimmed === '' || trimmed.includes('/')) {
+    if (trimmed === "" || trimmed.includes("/")) {
       setError("Folder name cannot be empty or contain '/'");
       return;
     }
     if (trimmed) {
       onConfirm(folderName);
-      setFolderName('');
+      setFolderName("");
       explorerStore.setOpenCreateFolderModal(false);
     }
   };
 
   const handleClose = () => {
-    setFolderName('');
+    setFolderName("");
     explorerStore.setOpenCreateFolderModal(false);
   };
+
+  useEffect(() => {
+    setError("");
+  }, [folderName]);
 
   return {
     folderName,

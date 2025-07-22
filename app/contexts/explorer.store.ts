@@ -21,15 +21,25 @@ interface ExplorerStore {
   openDeleteModal: boolean;
   setOpenDeleteModal: (open: boolean) => void;
 
-  selectedItem: {item: Folder | Post | null, type: "folder" | "post" | null};
-  setSelectedItem: (item: Folder | Post | null, type: "folder" | "post") => void;
+  selectedItems: {
+    item: Folder | Post | null;
+    type: "folder" | "post" | null;
+  }[];
+  setSelectedItems: (
+    items: { item: Folder | Post | null; type: "folder" | "post" | null }[]
+  ) => void;
+
+  addSelectedItem: (item: {
+    item: Folder | Post | null;
+    type: "folder" | "post" | null;
+  }) => void;
 
   baseRoute?: string;
   setBaseRoute: (route: string) => void;
 }
 
 export const useExplorerStore = create<ExplorerStore>((set, get) => ({
-  route: "AdministradorUsuario",
+  route: "AdministradorUsuarioRemoto",
   setRoute: (route: string) => set({ route }),
 
   posts: [],
@@ -67,9 +77,19 @@ export const useExplorerStore = create<ExplorerStore>((set, get) => ({
   openDeleteModal: false,
   setOpenDeleteModal: (open: boolean) => set({ openDeleteModal: open }),
 
-  selectedItem: {item: null, type: null},
-  setSelectedItem: (item: Folder | Post | null, type: "folder" | "post") => set({ selectedItem: {item, type} }),
+  selectedItems: [],
+  setSelectedItems: (
+    items: { item: Folder | Post | null; type: "folder" | "post" | null }[]
+  ) => set({ selectedItems: items }),
 
-  baseRoute: "AdministradorUsuario",
+  addSelectedItem: (item: {
+    item: Folder | Post | null;
+    type: "folder" | "post" | null;
+  }) =>
+    set((state) => ({
+      selectedItems: [...state.selectedItems, item],
+    })),
+
+  baseRoute: "AdministradorUsuarioRemoto",
   setBaseRoute: (route) => set({ baseRoute: route }),
 }));

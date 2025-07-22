@@ -1,6 +1,8 @@
 'use server';
 
 import itemsServices from '../services/item.service';
+import { Folder } from '../types/Folder';
+import { Post } from '../types/Post';
 
 /**
  * Uploads a post to the server.
@@ -77,6 +79,8 @@ export async function getItemsFromRouteAction(route: string) {
   return await itemsServices.getItemsFromRoute(route);
 }
 
-export async function deleteItemAction(id: string, type: string | null) {
-  return await itemsServices.deleteItem(id, type);
+export async function deleteItemsAction(items: {item: Folder | Post | null, type: "folder" | "post" | null}[]) {
+  items.forEach((element) => {
+    if (element.item && element.type) itemsServices.deleteItem(element.item.id!, element.type);
+  })
 }

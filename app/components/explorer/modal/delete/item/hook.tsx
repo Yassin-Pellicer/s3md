@@ -10,11 +10,17 @@ export function hooks (onConfirm: () => void) {
 
   const handleConfirm = () => {
     onConfirm();
+    setTimeout(() => {
+      explorerStore.setSelectedItems([]);
+    }, 300);
     explorerStore.setOpenDeleteModal(false);
   };
 
   const handleClose = () => {
     setFolderName('');
+    setTimeout(() => {
+      explorerStore.setSelectedItems([]);
+    }, 300);
     explorerStore.setOpenDeleteModal(false);
   };
 

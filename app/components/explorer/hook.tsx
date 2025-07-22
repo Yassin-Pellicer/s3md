@@ -1,5 +1,4 @@
-import { getItemsFromRouteAction, uploadFolderAction, uploadPostAction, deleteItemAction } from "@/app/server/item.action";
-import { useEffect } from "react";
+import { getItemsFromRouteAction, uploadFolderAction, deleteItemsAction } from "@/app/server/item.action";
 
 import { Folder } from "../../types/Folder";
 import { Post } from "../../types/Post";
@@ -27,13 +26,10 @@ export const hooks = () => {
     explorerStore.setFolders(folders);
     explorerStore.setPosts(posts);
     explorerStore.setAllItems(folders, posts);
-    console.log("triggered_wrong")
-    console.log(folders, posts);
   };
 
   const handleBreadcrumbClick = (index: number) => {
     const pathParts = explorerStore.route.split('/').filter(Boolean);
-    console.log(pathParts);
     const newPath = pathParts.slice(0, index + 1).join('/');
     explorerStore.setRoute(newPath);
     fetchContent(newPath);
@@ -48,13 +44,13 @@ export const hooks = () => {
     fetchContent(explorerStore.route);
   };
 
-  const deleteItem = async (id: string, type: string | null) => {
-    await deleteItemAction(id, type);
+  const deleteItems = async (items: {item: Folder | Post | null, type: "folder" | "post" | null}[]) => {
+    await deleteItemsAction(items);
     fetchContent(explorerStore.route);
   }
 
   return {
-    deleteItem,
+    deleteItems,
     handleBreadcrumbClick,
     addNewFolder,
     fetchContent,
