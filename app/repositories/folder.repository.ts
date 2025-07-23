@@ -126,6 +126,60 @@ export class FolderRepository {
   getFoldersFromRoute(route: string): Promise<Folder[]> {
     return prisma.folder.findMany({ where: { route } });
   }
+
+  async moveFolder(id: string, route: string): Promise<Folder> {
+    let continuationToken: string | undefined = undefined;
+
+    console.log(`[DEBUG] Deleting folder with ID: ${id}`);
+
+    const folderToMove = await prisma.folder.findUnique({
+      where: { id },
+    });
+
+    if (!folderToMove) {
+      throw new Error(`Folder with ID ${id} not found`);
+    }
+
+    const routePrefix = folderToMove.route;
+
+    do {
+      const listCommand: ListObjectsV2Command = new ListObjectsV2Command({
+        Bucket: process.env.S3_BUCKET_NAME!,
+        Prefix: `${routePrefix}/${folderToMove.name}/`,
+        ContinuationToken: continuationToken,
+      });
+
+      const listResult = await s3Client.send(listCommand);
+      const keys = listResult.Contents?.map((obj) => ({ Key: obj.Key! })) ?? [];
+
+      if (keys.length > 0) {
+        const deleteCommand = uploadToS3({
+          Key: `${route}/${folderToMove.name}/${folderToMove.}`,
+        });
+
+        await s3Client.send(deleteCommand);
+      }
+
+      continuationToken = listResult.IsTruncated
+        ? listResult.NextContinuationToken
+        : undefined;
+    } while (continuationToken);
+
+    await prisma.folder.deleteMany({
+      where: {
+        route: {
+          startsWith: `${routePrefix}/`,
+        },
+      },
+    });
+
+    const deletedFolder = await prisma.folder.delete({
+      where: { id },
+    });
+
+    return deletedFolder;
+  }
+
 }
 
 export default new FolderRepository();
