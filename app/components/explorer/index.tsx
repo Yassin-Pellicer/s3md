@@ -8,6 +8,7 @@ import BreadcrumbNavigator from "../breadcrumbs";
 import CreateFolderModal from "./modal/create/folder";
 import FolderMenu from "./modal/info";
 import DeleteItems from "./modal/delete/item";
+import MoveItems from "./modal/move/item";
 
 const ExplorerItem = ({
   item,
@@ -25,7 +26,7 @@ const ExplorerItem = ({
   const description = type === "post" ? "" : (item as Post).description;
 
   const handleClick = () => {
-    if (explorerStore.editorMode) {
+    if (explorerStore.editorMode || explorerStore.isFinding) {
       return;
     }
     if (type === "folder" && onFolderClick)
@@ -35,8 +36,13 @@ const ExplorerItem = ({
 
   return (
     <div
-      onClick={() => { if (explorerStore.editorMode) { explorerStore.toggleSelectedItem({ item: item, type: type }) } }}
-      className="flex px-3 py-2 hover:bg-blue-50 group transition-colors duration-150 align-center items-center">
+      onClick={() => {
+        if (explorerStore.editorMode) {
+          explorerStore.toggleSelectedItem({ item: item, type: type });
+        }
+      }}
+      className="flex py-2 hover:bg-blue-50 group transition-colors duration-150 align-center items-center"
+    >
       {explorerStore.editorMode && (
         <input
           type="checkbox"
@@ -50,7 +56,13 @@ const ExplorerItem = ({
       {/* Icon */}
       <div className="flex-shrink-0 mr-3 flex items-center">
         {type === "folder" ? (
-          <i className="material-icons">folder</i>
+          <i
+            className={`material-icons ${
+              explorerStore.isFinding ? "text-gray-400" : ""
+            }`}
+          >
+            folder
+          </i>
         ) : (
           <i className="material-symbols-outlined">article</i>
         )}
@@ -79,14 +91,16 @@ const ExplorerItem = ({
       </div>
 
       {/* Edit */}
-      {!explorerStore.editorMode && <FolderMenu
-        onMove={() => console.log("Move clicked")}
-        onEdit={() => console.log("Edit clicked")}
-        onDelete={() => {
-          explorerStore.addSelectedItem({ item, type });
-          explorerStore.setOpenDeleteModal(true);
-        }}
-      />}
+      {!explorerStore.editorMode && (
+        <FolderMenu
+          onMove={() => explorerStore.setOpenMoveModal(true)}
+          onEdit={() => console.log("Edit clicked")}
+          onDelete={() => {
+            explorerStore.addSelectedItem({ item, type });
+            explorerStore.setOpenDeleteModal(true);
+          }}
+        />
+      )}
     </div>
   );
 };
@@ -96,116 +110,125 @@ export default function Explorer() {
   const explorerStore = useExplorerStore();
 
   return (
-    <div className="max-w-5xl mx-auto p-4 bg-white min-h-screen">
-      <div className="flex items-center justify-between pb-4 border-b border-gray-200 wrap flex-wrap">
-        <div className="flex-1 flex-col items-center space-x-4 space-y-1 mr-8">
-          <div className="flex items-center space-x-2">
+    <div className="max-w-4xl mx-auto py-4 bg-white min-h-screen">
+      <div className="flex-1 flex-col items-center space-y-1">
+        <h1 className="text-3xl tracking-tighter mb-4 font-semibold text-gray-900">
+          Explorer
+        </h1>
+        <div className="flex flex-row justify-between items-center gap-x-4 mb-4 flex-wrap gap-y-4">
+          <div className="flex flex-row w-full">
             {explorerStore.route &&
               explorerStore.route !== "AdminstradorUsuario" && (
                 <button
                   onClick={explorerHooks.handleBackClick}
                   title="Back"
-                  className="bg-transparent border-[1px] border-black rounded-full width-10 height-10 flex items-center justify-center p-[2px] hover:bg-gray-200 hover:cursor-pointer"
+                  className="mr-2 flex items-center w-[2.5%]"
                 >
                   <i
-                    className="material-symbols-outlined"
-                    style={{ fontSize: "16px" }}
+                    className="material-symbols-outlined leading-none align-middle"
+                    style={{
+                      fontSize: "16px",
+                      lineHeight: "1",
+                      display: "inline-block",
+                    }}
                   >
                     arrow_back
                   </i>
                 </button>
               )}
-            <h1 className="text-lg font-semibold text-gray-900">Explorer</h1>
+            <div className="w-[97.5%] mb-2">
+              <BreadcrumbNavigator
+                route={explorerStore.route}
+                onClickPart={explorerHooks.handleBreadcrumbClick}
+              />
+            </div>
           </div>
-          <BreadcrumbNavigator
-            route={explorerStore.route}
-            onClickPart={explorerHooks.handleBreadcrumbClick}
-          ></BreadcrumbNavigator>
-        </div>
 
-        <span className="text-sm text-gray-500 mr-6">
-          {explorerStore.allItems.length} items
-        </span>
-
-        <div className="flex items-center space-x-1">
-          <button
-            onClick={() =>
-              explorerHooks.fetchContent(
-                explorerStore.route || "AdminstradorUsuario"
-              )
-            }
-            title="Refresh"
-            className="bg-transparent border-[1px] border-black rounded-full width-10 height-10 flex items-center justify-center p-1 hover:bg-gray-200 hover:cursor-pointer"
-          >
-            <i
-              className="material-symbols-outlined"
-              style={{ fontSize: "20px" }}
-            >
-              refresh
-            </i>
-          </button>
-          <button
-            title="Add new post"
-            className="bg-transparent border-[1px] border-black rounded-full width-10 height-10 flex items-center justify-center p-1 hover:bg-gray-200 hover:cursor-pointer"
-          >
-            <i
-              className="material-symbols-outlined"
-              style={{ fontSize: "20px" }}
-            >
-              post_add
-            </i>
-          </button>
-          <button
-            title="Add new folder"
-            onClick={() => explorerStore.setOpenCreateFolderModal(true)}
-            className="bg-transparent border-[1px] border-black rounded-full width-10 height-10 flex items-center justify-center p-1 hover:bg-gray-200 hover:cursor-pointer"
-          >
-            <i
-              className="material-symbols-outlined"
-              style={{ fontSize: "20px" }}
-            >
-              create_new_folder
-            </i>
-          </button>
-          <button
-            title="Move or delete selected items"
-            onClick={() => explorerStore.setEditorMode(!explorerStore.editorMode)}
-            className={
-              explorerStore.editorMode
-                ? "bg-black text-white border-[1px] border-black rounded-full width-10 height-10 flex items-center justify-center p-1 hover:bg-gray-600 hover:cursor-pointer"
-                : "bg-transparent border-[1px] border-black rounded-full width-10 height-10 flex items-center justify-center p-1 hover:bg-gray-200 hover:cursor-pointer"
-            }
-          >
-            <i
-              className="material-symbols-outlined"
-              style={{ fontSize: "20px" }}
-            >
-              edit
-            </i>
-          </button>
-          {explorerStore.editorMode && <FolderMenu
-            onMove={() => console.log("Move clicked")}
-            onEdit={() => console.log("Edit clicked")}
-            onDelete={() => {
-              explorerStore.setOpenDeleteModal(true);
-            }}
-          />}
+          <div className="flex items-center justify-between w-full border-b-2 border-gray-200 pb-4">
+            <span className="text-sm text-gray-500">
+              {explorerStore.allItems.length} items
+            </span>
+            <div className="flex flex-row gap-x-1">
+              <button
+                title="Add new post"
+                className="bg-transparent border-[1px] border-black rounded-full width-10 height-10 flex items-center justify-center p-1 hover:bg-gray-200 hover:cursor-pointer"
+              >
+                <i
+                  className="material-symbols-outlined"
+                  style={{ fontSize: "20px" }}
+                >
+                  post_add
+                </i>
+              </button>
+              <button
+                title="Add new folder"
+                onClick={() => explorerStore.setOpenCreateFolderModal(true)}
+                className="bg-transparent border-[1px] border-black rounded-full width-10 height-10 flex items-center justify-center p-1 hover:bg-gray-200 hover:cursor-pointer"
+              >
+                <i
+                  className="material-symbols-outlined"
+                  style={{ fontSize: "20px" }}
+                >
+                  create_new_folder
+                </i>
+              </button>
+              {explorerStore.editorMode && (
+                <button
+                  title="Move or delete selected items"
+                  className="bg-transparent border-[1px] border-black rounded-full width-10 height-10 flex items-center justify-center p-1 hover:bg-gray-200 hover:cursor-pointer"
+                  disabled={!explorerStore.editorMode}
+                >
+                  <FolderMenu
+                    onMove={() => explorerStore.setOpenMoveModal(true)}
+                    onDelete={() => {
+                      explorerStore.setOpenDeleteModal(true);
+                    }}
+                  />
+                </button>
+              )}
+              <button
+                title="Move or delete selected items"
+                onClick={() =>
+                  explorerStore.setEditorMode(!explorerStore.editorMode)
+                }
+                className={
+                  explorerStore.editorMode
+                    ? "bg-black text-white border-[1px] border-black rounded-full width-10 height-10 flex items-center justify-center p-1 hover:bg-gray-600 hover:cursor-pointer"
+                    : "bg-transparent border-[1px] border-black rounded-full width-10 height-10 flex items-center justify-center p-1 hover:bg-gray-200 hover:cursor-pointer"
+                }
+              >
+                <i
+                  className="material-symbols-outlined"
+                  style={{ fontSize: "20px" }}
+                >
+                  edit
+                </i>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* List Header */}
       {explorerStore.allItems.length > 0 && (
-        <div className="flex items-center px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-100">
-          <div className="flex-1 flex items-center">Resource</div>
-          <div className="flex-shrink-0 mx-2 hidden md:block">Type</div>
-          <div className={`flex-shrink-0 w-20 ${!explorerStore.editorMode ? 'mr-7' : 'mr-3'} text-right hidden sm:block`}>
-            Modified
+        <div className="flex py-2 align-center items-center">
+          {/* Icon */}
+          <div className="flex-1 flex items-center font-light text-gray-500">
+            RESOURCE
           </div>
+
+          {/* Type */}
+          <div className="mx-8 hidden md:block font-light text-gray-500">
+            TYPE
+          </div>
+
+          {/* Date */}
+          <div className=" text-right font-light text-gray-500">MODIFIED</div>
         </div>
       )}
 
       {/* File List */}
-      <div className="bg-white min-h-[500px]">
+      <div className="bg-white min-h-[35vh]">
         {explorerStore.allItems.length > 0 ? (
           <div className="divide-y divide-gray-100">
             {explorerStore.allItems.map(({ item, type }, index) => {
@@ -258,15 +281,21 @@ export default function Explorer() {
         open={explorerStore.openCreateFolderModal}
         onConfirm={explorerHooks.addNewFolder}
       ></CreateFolderModal>
-
       <DeleteItems
         open={explorerStore.openDeleteModal}
         items={explorerStore.selectedItems}
         onConfirm={() => {
           if (explorerStore.selectedItems) {
-            explorerHooks.deleteItems(
-              explorerStore.selectedItems,
-            );
+            explorerHooks.deleteItems(explorerStore.selectedItems);
+          }
+        }}
+      />
+      <MoveItems
+        open={explorerStore.openMoveModal}
+        items={explorerStore.selectedItems}
+        onConfirm={() => {
+          if (explorerStore.selectedItems) {
+            explorerHooks.moveItems(explorerStore.selectedItems);
           }
         }}
       />

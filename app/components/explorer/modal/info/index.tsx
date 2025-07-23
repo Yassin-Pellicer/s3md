@@ -7,7 +7,7 @@ import {
 } from '@mui/material';
 import { hooks } from './hook';
 
-const FolderMenu = ({ onMove, onEdit, onDelete }: { onMove: () => void; onEdit: () => void; onDelete: () => void; }) => {
+const FolderMenu = ({ onMove, onEdit, onDelete }: { onMove: () => void; onEdit?: () => void; onDelete: () => void; }) => {
   const useInfoHooks = hooks(onMove, onDelete, onEdit);
 
   return (
@@ -40,14 +40,14 @@ const FolderMenu = ({ onMove, onEdit, onDelete }: { onMove: () => void; onEdit: 
           <ListItemText primary={<span className="text-xs">Move</span>} />
         </MenuItem>
 
-        <MenuItem onClick={() => useInfoHooks.handleAction(onEdit)}>
+        {onEdit && <MenuItem onClick={() => useInfoHooks.handleAction(onEdit)}>
           <ListItemIcon>
             <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
               edit
             </span>
           </ListItemIcon>
           <ListItemText primary={<span className="text-xs">Edit</span>} />
-        </MenuItem>
+        </MenuItem>}
 
         <MenuItem
           onClick={() => useInfoHooks.handleAction(onDelete)}

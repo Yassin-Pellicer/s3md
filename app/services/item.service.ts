@@ -52,6 +52,17 @@ export class itemsService {
       console.log("post deletion complete");
     }
   }
+
+  async moveItem(id: string, type: string | null, route: string): Promise<void> {
+    if (type === "folder") {
+      await folderRepository.move(id, route);
+      console.log("folder move complete");
+    }
+    if (type === "post") {
+      await postRepository.move(id, route);
+      console.log("post move complete");
+    }
+  }
 }
 
 export default new itemsService();

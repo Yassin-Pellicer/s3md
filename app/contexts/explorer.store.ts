@@ -6,6 +6,9 @@ interface ExplorerStore {
   route: string;
   setRoute: (route: string) => void;
 
+  isFinding: boolean;
+  setIsFinding: (finding: boolean) => void;
+
   posts: Post[];
   setPosts: (posts: Post[]) => void;
 
@@ -20,6 +23,9 @@ interface ExplorerStore {
 
   openDeleteModal: boolean;
   setOpenDeleteModal: (open: boolean) => void;
+
+  openMoveModal: boolean;
+  setOpenMoveModal: (open: boolean) => void;
 
   selectedItems: {
     item: Folder | Post | null;
@@ -52,8 +58,11 @@ interface ExplorerStore {
 }
 
 export const useExplorerStore = create<ExplorerStore>((set, get) => ({
-  route: "AdministradorUsuario",
+  route: "AdministradorUsuarioRemoto",
   setRoute: (route: string) => set({ route }),
+
+  isFinding: false,
+  setIsFinding: (finding: boolean) => set({ isFinding: finding }),
 
   posts: [],
   setPosts: (posts: Post[]) => set({ posts }),
@@ -63,29 +72,29 @@ export const useExplorerStore = create<ExplorerStore>((set, get) => ({
 
   allItems: [],
 
-setAllItems: (folders: Folder[], posts: Post[]) => {
-  const folderItems = folders.map((folder) => ({
-    type: "folder" as const,
-    item: folder,
-  }));
+  setAllItems: (folders: Folder[], posts: Post[]) => {
+    const folderItems = folders.map((folder) => ({
+      type: "folder" as const,
+      item: folder,
+    }));
 
-  const postItems = posts.map((post) => ({
-    type: "post" as const,
-    item: post,
-  }));
+    const postItems = posts.map((post) => ({
+      type: "post" as const,
+      item: post,
+    }));
 
-  const allItems = [...folderItems, ...postItems].sort((a, b) => {
-    if (a.type === "folder" && b.type === "post") return -1;
-    if (a.type === "post" && b.type === "folder") return 1;
-    return 0;
-  });
+    const allItems = [...folderItems, ...postItems].sort((a, b) => {
+      if (a.type === "folder" && b.type === "post") return -1;
+      if (a.type === "post" && b.type === "folder") return 1;
+      return 0;
+    });
 
-  set({
-    folders: [...folders],  
-    posts: [...posts],
-    allItems,
-  });
-},
+    set({
+      folders: [...folders],
+      posts: [...posts],
+      allItems,
+    });
+  },
 
   openCreateFolderModal: false,
   setOpenCreateFolderModal: (open: boolean) =>
@@ -93,6 +102,9 @@ setAllItems: (folders: Folder[], posts: Post[]) => {
 
   openDeleteModal: false,
   setOpenDeleteModal: (open: boolean) => set({ openDeleteModal: open }),
+
+  openMoveModal: false,
+  setOpenMoveModal: (open: boolean) => set({ openMoveModal: open }),
 
   selectedItems: [],
   setSelectedItems: (
@@ -163,12 +175,13 @@ setAllItems: (folders: Folder[], posts: Post[]) => {
       }
     }),
 
-  baseRoute: "AdministradorUsuario",
+  baseRoute: "AdministradorUsuarioRemoto",
   setBaseRoute: (route) => set({ baseRoute: route }),
 
   editorMode: false,
-  setEditorMode: (mode: boolean) => set((state) => ({
-    editorMode: mode,
-    selectedItems: mode ? state.selectedItems : []
-  })),
+  setEditorMode: (mode: boolean) =>
+    set((state) => ({
+      editorMode: mode,
+      selectedItems: mode ? state.selectedItems : [],
+    })),
 }));

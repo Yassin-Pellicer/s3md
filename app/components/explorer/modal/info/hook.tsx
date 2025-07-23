@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export function hooks (onMove: () => void, onDelete: () => void, onEdit: () => void) {
+export function hooks (onMove: () => void, onDelete: () => void, onEdit?: () => void) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -12,8 +12,8 @@ export function hooks (onMove: () => void, onDelete: () => void, onEdit: () => v
     setAnchorEl(null);
   };
 
-  const handleAction = (action: () => void) => {
-    action();
+  const handleAction = (action?: () => void) => {
+    if(action) action();
     handleClose();
   };
 

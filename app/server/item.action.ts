@@ -83,6 +83,13 @@ export async function getItemsFromRouteAction(route: string) {
   return await itemsServices.getItemsFromRoute(route);
 }
 
+/**
+ * Deletes multiple items from the server.
+ * @param items An array of objects with properties:
+ *   - item: the item to delete (Folder or Post)
+ *   - type: the type of the item to delete ("folder" or "post")
+ * @returns A promise that resolves when all items have been deleted.
+ */
 export async function deleteItemsAction(
   items: { item: Folder | Post | null; type: "folder" | "post" | null }[]
 ) {
@@ -91,6 +98,19 @@ export async function deleteItemsAction(
       .filter((el) => el.item && el.type)
       .map((el) =>
         itemsServices.deleteItem(el.item!.id!, el.type!)
+      )
+  );
+}
+
+export async function moveItemsAction(
+  items: { item: Folder | Post | null; type: "folder" | "post" | null }[],
+  route: string
+) {
+  await Promise.all(
+    items
+      .filter((el) => el.item && el.type)
+      .map((el) =>
+        itemsServices.moveItem(el.item!.id!, el.type!, route)
       )
   );
 }

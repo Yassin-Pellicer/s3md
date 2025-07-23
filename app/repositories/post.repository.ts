@@ -1,10 +1,14 @@
+import { GetObjectCommand } from "@aws-sdk/client-s3";
 import {
   uploadToS3,
   deleteFromS3,
   deleteMultipleFromS3,
+  s3Client,
+  getFromS3,
 } from "../aws/s3client";
 import prisma from "../prisma/client";
 import { Post } from "../types/Post";
+import { Readable } from "stream";
 
 export class PostRepository {
   /**
@@ -104,6 +108,27 @@ export class PostRepository {
       console.error("Database query error:", error);
       throw error;
     }
+  }
+
+  async move(id: string, route: string): Promise<Post> {
+    const post = await prisma.post.findUnique({ where: { id } });
+    if (!post) throw new Error(`Post with id ${id} not found.`);
+
+    const s3KeyBase = `${post.route}/${post.title}_${post.id}/`;
+    const imgData = await getFromS3(`${s3KeyBase}${post.title}.img`);
+    const postData = await getFromS3(`${s3KeyBase}${post.title}.post`);
+
+    const imgBlob = new Blob([imgData.buffer], { type: imgData.contentType });
+    const postBlob = new Blob([postData.buffer], { type: postData.contentType });
+
+    this.delete(id);
+    this.create(post, imgBlob, postBlob);
+    
+    const newPost = await prisma.post.update({
+      where: { id },
+      data: { route },
+    });
+    return newPost;
   }
 }
 

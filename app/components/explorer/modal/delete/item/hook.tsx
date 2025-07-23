@@ -12,12 +12,15 @@ export function hooks (onConfirm: () => void) {
     onConfirm();
     setTimeout(() => {
       explorerStore.setSelectedItems([]);
-    }, 300);
+    }, 200);
     explorerStore.setOpenDeleteModal(false);
   };
 
   const handleClose = () => {
     setFolderName('');
+    setTimeout(() => {
+      if(!explorerStore.editorMode) explorerStore.setSelectedItems([]);
+    }, 200);
     explorerStore.setOpenDeleteModal(false);
   };
 
