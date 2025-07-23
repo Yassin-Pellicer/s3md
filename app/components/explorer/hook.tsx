@@ -24,8 +24,6 @@ export const hooks = () => {
 
   const fetchContent = async (route: string) => {
     const { folders, posts }: { folders: Folder[]; posts: Post[] } = await getItemsFromRouteAction(route);
-    explorerStore.setFolders(folders);
-    explorerStore.setPosts(posts);
     explorerStore.setAllItems(folders, posts);
   };
 
@@ -48,17 +46,20 @@ export const hooks = () => {
   const deleteItems = async (items: { item: Folder | Post | null, type: "folder" | "post" | null }[]) => {
     try {
       explorerStore.setSelectedItems([]);
+      const startTime = performance.now();
       await deleteItemsAction(items);
-      setTimeout(async () => {
-        await fetchContent(explorerStore.route);
-      }, 500);
+      const endTime = performance.now();
+      console.log(`[DEBUG] Deleting items took ${endTime - startTime} milliseconds.`);
+      console.log("[DEBUG] Deleted items:", items);
+      console.log("EJECUTADO");
+      console.log("[DEBUG] Fetched content after delete:", explorerStore.folders, explorerStore.posts);
     } catch (error) {
       console.error("[ERROR] Failed to delete items:", error);
     }
+    await fetchContent(explorerStore.route);
   };
 
   useEffect(() => {
-    if (explorerStore.route !== explorerStore.baseRoute) return
     fetchContent(explorerStore.route);
   }, [])
 

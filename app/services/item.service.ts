@@ -43,8 +43,14 @@ export class itemsService {
    * @returns A promise that resolves when the item is deleted.
    */
   async deleteItem(id: string, type: string | null): Promise<void> {
-    if (type === "folder") await folderRepository.delete(id);
-    if (type === "post") await postRepository.delete(id);
+    if (type === "folder") {
+      await folderRepository.delete(id);
+      console.log("folder deletion complete");
+    }
+    if (type === "post") {
+      await postRepository.delete(id);
+      console.log("post deletion complete");
+    }
   }
 }
 

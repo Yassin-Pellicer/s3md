@@ -63,25 +63,29 @@ export const useExplorerStore = create<ExplorerStore>((set, get) => ({
 
   allItems: [],
 
-  setAllItems: (folders: Folder[], posts: Post[]) => {
-    const folderItems = folders.map((folder) => ({
-      type: "folder" as const,
-      item: folder,
-    }));
+setAllItems: (folders: Folder[], posts: Post[]) => {
+  const folderItems = folders.map((folder) => ({
+    type: "folder" as const,
+    item: folder,
+  }));
 
-    const postItems = posts.map((post) => ({
-      type: "post" as const,
-      item: post,
-    }));
+  const postItems = posts.map((post) => ({
+    type: "post" as const,
+    item: post,
+  }));
 
-    const allItems = [...folderItems, ...postItems].sort((a, b) => {
-      if (a.type === "folder" && b.type === "post") return -1;
-      if (a.type === "post" && b.type === "folder") return 1;
-      return 0;
-    });
+  const allItems = [...folderItems, ...postItems].sort((a, b) => {
+    if (a.type === "folder" && b.type === "post") return -1;
+    if (a.type === "post" && b.type === "folder") return 1;
+    return 0;
+  });
 
-    set({ allItems });
-  },
+  set({
+    folders: [...folders],  
+    posts: [...posts],
+    allItems,
+  });
+},
 
   openCreateFolderModal: false,
   setOpenCreateFolderModal: (open: boolean) =>

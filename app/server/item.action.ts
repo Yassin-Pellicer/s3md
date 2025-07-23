@@ -86,8 +86,11 @@ export async function getItemsFromRouteAction(route: string) {
 export async function deleteItemsAction(
   items: { item: Folder | Post | null; type: "folder" | "post" | null }[]
 ) {
-  items.forEach((element) => {
-    if (element.item && element.type)
-      itemsServices.deleteItem(element.item.id!, element.type);
-  });
+  await Promise.all(
+    items
+      .filter((el) => el.item && el.type)
+      .map((el) =>
+        itemsServices.deleteItem(el.item!.id!, el.type!)
+      )
+  );
 }
