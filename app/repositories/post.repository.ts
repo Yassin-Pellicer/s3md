@@ -49,21 +49,23 @@ export class PostRepository {
     if (file && file.size > 0) {
       const htmlBuffer = Buffer.from(await file.arrayBuffer());
 
-      await uploadToS3({
+      const htmlResult = await uploadToS3({
         key: `${post.route}/${post.title}_${post.id}/${post.title}.post`,
         body: htmlBuffer,
         contentType: "text/html",
       });
+      console.log("htmlResult", htmlResult);
     }
 
     if (image && image.size > 0) {
       const imageBuffer = Buffer.from(await image.arrayBuffer());
 
-      await uploadToS3({
+      const imageResult = await uploadToS3({
         key: `${post.route}/${post.title}_${post.id}/${post.title}.img`,
         body: imageBuffer,
-        contentType: image.type || "image/png", // fallback
+        contentType: image.type || "image/png",
       });
+      console.log("imageResult", imageResult);
     }
 
     return post;
@@ -115,15 +117,19 @@ export class PostRepository {
     if (!post) throw new Error(`Post with id ${id} not found.`);
 
     const s3KeyBase = `${post.route}/${post.title}_${post.id}/`;
-    const imgData = await getFromS3(`${s3KeyBase}${post.title}.img`);
-    const postData = await getFromS3(`${s3KeyBase}${post.title}.post`);
 
-    const imgBlob = new Blob([imgData.buffer], { type: imgData.contentType });
-    const postBlob = new Blob([postData.buffer], { type: postData.contentType });
+    const imgDataResult = await getFromS3(`${s3KeyBase}${post.title}.img`);
+    const postDataResult = await getFromS3(`${s3KeyBase}${post.title}.post`);
 
-    this.delete(id);
-    this.create(post, imgBlob, postBlob);
-    
+    const imgBlob = imgDataResult ? new Blob([imgDataResult.buffer], { type: imgDataResult.contentType }) : undefined;
+    const postBlob = postDataResult ? new Blob([postDataResult.buffer], { type: postDataResult.contentType }) : undefined;
+
+    post.route = route;
+
+    await this.delete(id);
+    const postCreated = await this.create(post, imgBlob, postBlob);
+    console.log("post move complete");
+    console.log(postCreated);
     const newPost = await prisma.post.update({
       where: { id },
       data: { route },

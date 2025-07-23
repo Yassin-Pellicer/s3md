@@ -72,6 +72,7 @@ export const hooks = () => {
   ) => {
     try {
       explorerStore.setSelectedItems([]);
+      console.log("DEBUG", items);
       await moveItemsAction(items, scoutStore.route);
     } catch (error) {
       console.error("[ERROR] Failed to move items:", error);

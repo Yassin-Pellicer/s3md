@@ -57,9 +57,8 @@ const ExplorerItem = ({
       <div className="flex-shrink-0 mr-3 flex items-center">
         {type === "folder" ? (
           <i
-            className={`material-icons ${
-              explorerStore.isFinding ? "text-gray-400" : ""
-            }`}
+            className={`material-icons ${explorerStore.isFinding ? "text-gray-400" : ""
+              }`}
           >
             folder
           </i>
@@ -93,7 +92,10 @@ const ExplorerItem = ({
       {/* Edit */}
       {!explorerStore.editorMode && (
         <FolderMenu
-          onMove={() => explorerStore.setOpenMoveModal(true)}
+          onMove={() => {
+            explorerStore.addSelectedItem({ item, type });
+            explorerStore.setOpenMoveModal(true)}
+          }
           onEdit={() => console.log("Edit clicked")}
           onDelete={() => {
             explorerStore.addSelectedItem({ item, type });
@@ -149,6 +151,22 @@ export default function Explorer() {
               {explorerStore.allItems.length} items
             </span>
             <div className="flex flex-row gap-x-1">
+              <button
+                onClick={() =>
+                  explorerHooks.fetchContent(
+                    explorerStore.route || "AdminstradorUsuario"
+                  )
+                }
+                title="Refresh"
+                className="bg-transparent border-[1px] border-black rounded-full width-10 height-10 flex items-center justify-center p-1 hover:bg-gray-200 hover:cursor-pointer"
+              >
+                <i
+                  className="material-symbols-outlined"
+                  style={{ fontSize: "20px" }}
+                >
+                  refresh
+                </i>
+              </button>
               <button
                 title="Add new post"
                 className="bg-transparent border-[1px] border-black rounded-full width-10 height-10 flex items-center justify-center p-1 hover:bg-gray-200 hover:cursor-pointer"

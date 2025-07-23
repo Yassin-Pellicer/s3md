@@ -79,16 +79,23 @@ export async function deleteMultipleFromS3(list: { Key: string }[]) {
   await s3Client.send(command);
 }
 
+
 /**
- * Retrieves an object from S3 and returns it as a Buffer.
- * @param key - The S3 object key (e.g. 'html-documents/file.html')
- * @returns Object containing buffer, contentType, and contentLength
+ * Fetches an object from S3 and returns its content as a Buffer.
+ * 
+ * @param key - The S3 key of the object to retrieve.
+ * @returns A promise that resolves to an object containing:
+ *   - buffer: The contents of the S3 object as a Buffer.
+ *   - contentType: The MIME type of the object.
+ *   - contentLength: The size of the object in bytes, if available.
+ *   Returns null if the object does not exist.
+ * @throws An error if the S3 request fails for any reason other than a missing key.
  */
 export async function getFromS3(key: string): Promise<{
   buffer: Buffer;
   contentType: string;
   contentLength?: number;
-}> {
+} | null> {
   const bucket = process.env.S3_BUCKET_NAME!;
 
   const command = new GetObjectCommand({
@@ -96,24 +103,28 @@ export async function getFromS3(key: string): Promise<{
     Key: key,
   });
 
-  const response = await s3Client.send(command);
+  try {
+    const response = await s3Client.send(command);
+    const stream = response.Body as Readable;
+    const chunks: Buffer[] = [];
 
-  if (!response.Body) {
-    throw new Error("No body returned from S3");
+    for await (const chunk of stream) {
+      chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
+    }
+
+    const buffer = Buffer.concat(chunks);
+
+    return {
+      buffer,
+      contentType: response.ContentType || "application/octet-stream",
+      contentLength: response.ContentLength,
+    };
+  } catch (error: any) {
+    if (error.Code === "NoSuchKey") {
+      console.warn(`S3: Key not found — "${key}"`);
+      return null;
+    }
+    console.error("Unexpected S3 error:", error);
+    throw error; 
   }
-
-  const stream = response.Body as Readable;
-  const chunks: Buffer[] = [];
-
-  for await (const chunk of stream) {
-    chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
-  }
-
-  const buffer = Buffer.concat(chunks);
-
-  return {
-    buffer,
-    contentType: response.ContentType || "application/octet-stream",
-    contentLength: response.ContentLength,
-  };
 }

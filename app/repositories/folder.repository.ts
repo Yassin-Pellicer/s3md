@@ -1,4 +1,10 @@
-import { DeleteObjectsCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
+import {
+  CopyObjectCommand,
+  DeleteObjectCommand,
+  DeleteObjectsCommand,
+  ListObjectsV2Command,
+  PutObjectCommand,
+} from "@aws-sdk/client-s3";
 import {
   deleteFromS3,
   deleteMultipleFromS3,
@@ -7,6 +13,7 @@ import {
 } from "../aws/s3client";
 import prisma from "../prisma/client";
 import { Folder } from "../types/Folder";
+import { Post } from "../types/Post";
 
 export class FolderRepository {
   /**
@@ -127,10 +134,17 @@ export class FolderRepository {
     return prisma.folder.findMany({ where: { route } });
   }
 
-  async moveFolder(id: string, route: string): Promise<Folder> {
+  /**
+   * Move a folder and all its contents to a new route.
+   * This function will move all the contents of the folder, including subfolders,
+   * to the new location. It will also update the route of the folder and all its
+   * subfolders in the database.
+   * @param id The ID of the folder to move.
+   * @param newRoute The new route of the folder.
+   * @returns A promise that resolves to the updated folder.
+   */
+  async move(id: string, newRoute: string) {
     let continuationToken: string | undefined = undefined;
-
-    console.log(`[DEBUG] Deleting folder with ID: ${id}`);
 
     const folderToMove = await prisma.folder.findUnique({
       where: { id },
@@ -140,24 +154,37 @@ export class FolderRepository {
       throw new Error(`Folder with ID ${id} not found`);
     }
 
-    const routePrefix = folderToMove.route;
+    const subfolders: Folder[] = await prisma.folder.findMany({
+      where: {
+        route: {
+          startsWith: `${folderToMove.route}/${folderToMove.name}`,
+        },
+      },
+    });
+
+    const subposts: Post[] = await prisma.post.findMany({
+      where: {
+        route: {
+          startsWith: `${folderToMove.route}/${folderToMove.name}`,
+        },
+      },
+    });
+
+    const objectsToProcess: { Key: string }[] = [];
 
     do {
       const listCommand: ListObjectsV2Command = new ListObjectsV2Command({
         Bucket: process.env.S3_BUCKET_NAME!,
-        Prefix: `${routePrefix}/${folderToMove.name}/`,
+        Prefix: `${folderToMove.route}/${folderToMove.name}/`,
         ContinuationToken: continuationToken,
       });
 
       const listResult = await s3Client.send(listCommand);
-      const keys = listResult.Contents?.map((obj) => ({ Key: obj.Key! })) ?? [];
 
-      if (keys.length > 0) {
-        const deleteCommand = uploadToS3({
-          Key: `${route}/${folderToMove.name}/${folderToMove.}`,
-        });
-
-        await s3Client.send(deleteCommand);
+      if (listResult.Contents) {
+        objectsToProcess.push(
+          ...listResult.Contents.map((obj) => ({ Key: obj.Key! }))
+        );
       }
 
       continuationToken = listResult.IsTruncated
@@ -165,21 +192,75 @@ export class FolderRepository {
         : undefined;
     } while (continuationToken);
 
-    await prisma.folder.deleteMany({
-      where: {
-        route: {
-          startsWith: `${routePrefix}/`,
-        },
-      },
+    for (const object of objectsToProcess) {
+      const relativeKey = object.Key.substring(
+        `${folderToMove.route}/${folderToMove.name}/`.length
+      );
+      const newKey = `${newRoute}/${folderToMove.name}/${relativeKey}`;
+
+      const copyCommand = new CopyObjectCommand({
+        Bucket: process.env.S3_BUCKET_NAME!,
+        CopySource: `${process.env.S3_BUCKET_NAME}/${encodeURIComponent(object.Key)}`,
+        Key: newKey,
+      });
+
+      await s3Client.send(copyCommand);
+
+      const deleteCommand = new DeleteObjectCommand({
+        Bucket: process.env.S3_BUCKET_NAME!,
+        Key: object.Key,
+      });
+
+      await s3Client.send(deleteCommand);
+    }
+
+    const folderMarkerCommand = new PutObjectCommand({
+      Bucket: process.env.S3_BUCKET_NAME!,
+      Key: `${newRoute}/${folderToMove.name}/`,
+      Body: "",
+      ContentType: "application/x-directory",
+    });
+    await s3Client.send(folderMarkerCommand);
+
+    await prisma.$transaction(async (tx) => {
+      const updates = await Promise.all(
+        subposts.map(async (element) => {
+          const relativeKey = element.route!.substring(
+            `${folderToMove.route}/${folderToMove.name}/`.length
+          );
+          const newKey = `${newRoute}/${folderToMove.name}/${relativeKey}`;
+
+          return tx.post.update({
+            where: { id: element.id },
+            data: { route: newKey.replace(/\/+$/, '') },
+          });
+        })
+      );
+      return updates;
     });
 
-    const deletedFolder = await prisma.folder.delete({
-      where: { id },
+    await prisma.$transaction(async (tx) => {
+      const updates = await Promise.all(
+        subfolders.map(async (element) => {
+          const relativeKey = element.route!.substring(
+            `${folderToMove.route}/${folderToMove.name}/`.length
+          );
+          const newKey = `${newRoute}/${folderToMove.name}/${relativeKey}`;
+
+          return tx.folder.update({
+            where: { id: element.id },
+            data: { route: newKey.replace(/\/+$/, '') },
+          });
+        })
+      );
+      return updates;
     });
 
-    return deletedFolder;
+    await prisma.folder.update({
+      where: { id: folderToMove.id },
+      data: { route: newRoute },
+    });
   }
-
 }
 
 export default new FolderRepository();

@@ -29,7 +29,7 @@ interface ScoutStore {
 }
 
 export const useScoutStore = create<ScoutStore>((set, get) => ({
-  route: "AdministradorUsuarioRemoto",
+  route: "AdministradorUsuario",
   setRoute: (route: string) => set({ route }),
 
   isFinding: false,
@@ -72,6 +72,6 @@ export const useScoutStore = create<ScoutStore>((set, get) => ({
   mode: null,
   setMode: (mode: "move" | "guest" | null) => set({ mode: mode }),
 
-  baseRoute: "AdministradorUsuarioRemoto",
+  baseRoute: "AdministradorUsuario",
   setBaseRoute: (route) => set({ baseRoute: route }),
 }));

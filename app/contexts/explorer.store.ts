@@ -58,7 +58,7 @@ interface ExplorerStore {
 }
 
 export const useExplorerStore = create<ExplorerStore>((set, get) => ({
-  route: "AdministradorUsuarioRemoto",
+  route: "AdministradorUsuario",
   setRoute: (route: string) => set({ route }),
 
   isFinding: false,
@@ -175,7 +175,7 @@ export const useExplorerStore = create<ExplorerStore>((set, get) => ({
       }
     }),
 
-  baseRoute: "AdministradorUsuarioRemoto",
+  baseRoute: "AdministradorUsuario",
   setBaseRoute: (route) => set({ baseRoute: route }),
 
   editorMode: false,
