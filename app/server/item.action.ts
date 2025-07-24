@@ -21,12 +21,8 @@ export async function uploadPostAction(formData: FormData) {
     const rawPost = formData.get("post") as string | null;
     const image = formData.get("image") as Blob | undefined;
 
-    if (!file || !rawPost) {
-      throw new Error("Missing required data");
-    }
-
     const savedPost = await itemsServices.createPost(
-      JSON.parse(rawPost),
+      JSON.parse(rawPost || "{}"),
       image,
       file
     );

@@ -43,7 +43,7 @@ export class PostRepository {
    * uploaded to S3 and the post will be updated with the content URL.
    * @returns The newly created post.
    */
-  async create(data: any, image?: Blob, file?: Blob): Promise<Post> {
+  async create(data: any, image?: Blob, file?: Blob | null): Promise<Post> {
     const post: Post = await prisma.post.create({ data });
 
     if (file && file.size > 0) {

@@ -9,6 +9,7 @@ import CreateFolderModal from "./modal/create/folder";
 import FolderMenu from "./modal/info";
 import DeleteItems from "./modal/delete/item";
 import MoveItems from "./modal/move/item";
+import CreatePost from "./modal/create/post";
 
 const ExplorerItem = ({
   item,
@@ -170,6 +171,7 @@ export default function Explorer() {
               <button
                 title="Add new post"
                 className="bg-transparent border-[1px] border-black rounded-full width-10 height-10 flex items-center justify-center p-1 hover:bg-gray-200 hover:cursor-pointer"
+                onClick={() => explorerStore.setOpenCreatePostModal(true)}
               >
                 <i
                   className="material-symbols-outlined"
@@ -317,6 +319,10 @@ export default function Explorer() {
           }
         }}
       />
+      <CreatePost
+        open={explorerStore.openCreatePostModal}
+        onConfirm={explorerHooks.addNewPost}
+        ></CreatePost>
     </div>
   );
 }

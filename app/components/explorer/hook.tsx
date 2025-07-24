@@ -3,6 +3,7 @@ import {
   uploadFolderAction,
   deleteItemsAction,
   moveItemsAction,
+  uploadPostAction,
 } from "@/app/server/item.action";
 
 import { Folder } from "../../types/Folder";
@@ -67,6 +68,21 @@ export const hooks = () => {
     fetchContent(explorerStore.route);
   };
 
+  const addNewPost = async (postName: string, postDescription: string) => {
+    const formData = new FormData();
+
+    const post = {
+      title: postName,
+      description: postDescription,
+      route: explorerStore.route,
+    };
+
+    formData.append("post", JSON.stringify(post));
+
+    await uploadPostAction(formData);
+    fetchContent(explorerStore.route);
+  };
+
   const moveItems = async (
     items: { item: Folder | Post | null; type: "folder" | "post" | null }[]
   ) => {
@@ -97,6 +113,7 @@ export const hooks = () => {
   }, []);
 
   return {
+    addNewPost,
     moveItems,
     deleteItems,
     handleBreadcrumbClick,

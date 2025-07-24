@@ -21,6 +21,9 @@ interface ExplorerStore {
   openCreateFolderModal: boolean;
   setOpenCreateFolderModal: (open: boolean) => void;
 
+  openCreatePostModal: boolean;
+  setOpenCreatePostModal: (open: boolean) => void;
+
   openDeleteModal: boolean;
   setOpenDeleteModal: (open: boolean) => void;
 
@@ -99,6 +102,9 @@ export const useExplorerStore = create<ExplorerStore>((set, get) => ({
   openCreateFolderModal: false,
   setOpenCreateFolderModal: (open: boolean) =>
     set({ openCreateFolderModal: open }),
+
+  openCreatePostModal: false,
+  setOpenCreatePostModal: (open: boolean) => set({ openCreatePostModal: open }),
 
   openDeleteModal: false,
   setOpenDeleteModal: (open: boolean) => set({ openDeleteModal: open }),

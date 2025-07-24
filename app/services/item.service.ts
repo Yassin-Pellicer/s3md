@@ -22,7 +22,7 @@ export class itemsService {
    * @param post The post to create.
    * @returns The newly created post.
    */
-  async createPost(post: Post, image?: Blob, file?: Blob): Promise<Post> {
+  async createPost(post: Post, image?: Blob, file?: Blob | null): Promise<Post> {
     return postRepository.create(post, image, file);
   }
 
