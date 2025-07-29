@@ -73,7 +73,7 @@ export default function QuillEditor() {
           </div>
         </div>
       </div>
-      <div style={{ maxWidth: 800, margin: "0 auto" }}>
+      <div>
         <div ref={editorHooks.quillRef} />
       </div>
       <button

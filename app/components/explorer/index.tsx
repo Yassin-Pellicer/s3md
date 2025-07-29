@@ -113,7 +113,7 @@ export default function Explorer() {
   const explorerStore = useExplorerStore();
 
   return (
-    <div className="max-w-4xl mx-auto py-4 bg-white min-h-screen">
+    <div className="mx-auto py-4 bg-white min-h-screen">
       <div className="flex-1 flex-col items-center space-y-1">
         <h1 className="text-3xl tracking-tighter mb-4 font-semibold text-gray-900">
           Explorer
