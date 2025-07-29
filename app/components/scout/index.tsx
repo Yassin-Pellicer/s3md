@@ -33,9 +33,8 @@ const ExplorerItem = ({
       <div className="flex-shrink-0 mr-3 flex items-center">
         {type === "folder" ? (
           <i
-            className={`material-icons ${
-              scoutStore.isFinding ? "text-gray-400" : ""
-            }`}
+            className={`material-icons ${scoutStore.isFinding ? "text-gray-400" : ""
+              }`}
           >
             folder
           </i>
@@ -72,13 +71,25 @@ const ExplorerItem = ({
 export default function Explorer({ mode }: { mode: "guest" | "move" | null }) {
   const scoutHooks = hooks(mode);
   const scoutStore = useScoutStore();
+  const explorerStore = useExplorerStore();
 
   return (
     <div className="py-4 bg-white">
       <div className="flex-1 flex-col items-center space-y-1">
-        <h1 className="text-3xl tracking-tighter mb-4 font-semibold text-gray-900">
-          {mode === "move" ? "Select new route" : "Explorer"}
-        </h1>
+        <div className="flex flex-row justify-between items-center flex-wrap mb-4">
+          <h1 className="text-3xl tracking-tighter  font-semibold text-gray-900">
+            {mode === "move" ? "Select new route" : "Explorer"}
+          </h1>
+          {mode === "move" && <div className="flex flex-col items-end">
+            <p>Moving {explorerStore.selectedItems.length} item(s)</p>
+            <p className="flex items-center text-gray-400 text-sm mt-2">
+              <span className="material-symbols-outlined ml-2 mr-1" style={{ fontSize: "16px" }}>folder</span>
+              {explorerStore.folders.length}
+              <span className="material-symbols-outlined ml-2 mr-1" style={{ fontSize: "16px" }}>article</span>
+              {explorerStore.posts.length}
+            </p>
+          </div>}
+        </div>
         <div className="flex flex-row justify-between items-center gap-x-4 mb-4 flex-wrap gap-y-4">
           <div className="flex flex-row w-[100%]">
             {scoutStore.route &&
@@ -152,19 +163,37 @@ export default function Explorer({ mode }: { mode: "guest" | "move" | null }) {
 
       {/* File List */}
       <div className="bg-white h-[35vh] overflow-y-auto">
-        {scoutStore.allItems.length > 0 ? (
+        {mode === "move" ? (
           <div className="divide-y divide-gray-100">
-            {scoutStore.allItems.map(({ item, type }, index) => {
-              console.log("explorer", { item, type, index });
-              return (
+            {scoutStore.folders
+              .filter(
+                (item) =>
+                  !explorerStore.selectedItems.some(
+                    (selectedItem: any) =>
+                      selectedItem.item.name == item.name &&
+                      selectedItem.type == "folder" &&
+                      selectedItem.item.id == item.id
+                  )
+              )
+              .map((item, index) => (
                 <ExplorerItem
-                  key={`${type}-${item.id}-${index}`}
+                  key={`${item.id}-${index}`}
                   item={item}
-                  type={type}
+                  type={"folder"}
                   onFolderClick={scoutHooks.handleFolderClick}
                 />
-              );
-            })}
+              ))}
+          </div>
+        ) : scoutStore.allItems.length > 0 ? (
+          <div className="divide-y divide-gray-100">
+            {scoutStore.allItems.map(({ item, type }, index) => (
+              <ExplorerItem
+                key={`${type}-${item.id}-${index}`}
+                item={item}
+                type={type}
+                onFolderClick={scoutHooks.handleFolderClick}
+              />
+            ))}
           </div>
         ) : (
           <div className="text-center py-12 text-gray-500 items-center">

@@ -17,7 +17,7 @@ const FolderMenu = ({ onMove, onEdit, onDelete }: { onMove: () => void; onEdit?:
         onClick={useInfoHooks.handleClick}
         style={{ padding: 0 }}
       >
-        <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>more_vert</span>
+        <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>more_vert</span>
       </IconButton>
       <Menu
         anchorEl={useInfoHooks.anchorEl}

@@ -8,7 +8,7 @@ import BreadcrumbNavigator from "../breadcrumbs";
 import CreateFolderModal from "./modal/create/folder";
 import FolderMenu from "./modal/info";
 import DeleteItems from "./modal/delete/item";
-import MoveItems from "./modal/move/item";
+import MoveItems from "./modal/change/location/item";
 import CreatePost from "./modal/create/post";
 
 const ExplorerItem = ({
@@ -20,11 +20,10 @@ const ExplorerItem = ({
   onFolderClick?: (folderName: string) => void;
   type: "folder" | "post";
 }) => {
-  const explorerHooks = hooks();
   const explorerStore = useExplorerStore();
 
   const name = type === "folder" ? (item as Folder).name : (item as Post).title;
-  const description = type === "post" ? "" : (item as Post).description;
+  const description = type === "post" ? (item as Post).description : "";
 
   const handleClick = () => {
     if (explorerStore.editorMode || explorerStore.isFinding) {
@@ -37,73 +36,81 @@ const ExplorerItem = ({
 
   return (
     <div
-      onClick={() => {
-        if (explorerStore.editorMode) {
-          explorerStore.toggleSelectedItem({ item: item, type: type });
-        }
-      }}
-      className="flex py-2 hover:bg-blue-50 group transition-colors duration-150 align-center items-center"
+      className="flex py-2 hover:bg-blue-50 group transition-colors duration-150 align-center items-center h-11"
     >
       {explorerStore.editorMode && (
         <input
           type="checkbox"
-          className="mr-4"
-          readOnly
+          className="mr-4 hover:cursor-pointer"
           checked={explorerStore.selectedItems.some(
             (selectedItem) => selectedItem.item?.id === item.id
           )}
+          onChange={(e) => {
+            explorerStore.toggleSelectedItem({
+              item,
+              type,
+            });
+          }}
         ></input>
       )}
       {/* Icon */}
-      <div className="flex-shrink-0 mr-3 flex items-center">
-        {type === "folder" ? (
-          <i
-            className={`material-icons ${explorerStore.isFinding ? "text-gray-400" : ""
-              }`}
-          >
-            folder
-          </i>
-        ) : (
-          <i className="material-symbols-outlined">article</i>
-        )}
+      <div
+        className="flex flex-row justify-between items-center w-full"
+        onClick={() => {
+          if (explorerStore.editorMode) {
+            explorerStore.toggleSelectedItem({ item: item, type: type });
+          }
+        }}
+      >
+        <div className="flex-shrink-0 mr-3 flex items-center">
+          {type === "folder" ? (
+            <i
+              className={`material-icons ${explorerStore.isFinding ? "text-gray-400" : ""
+                }`}
+            >
+              folder
+            </i>
+          ) : (
+            <i className="material-symbols-outlined">article</i>
+          )}
+        </div>
+
+        {/* Name */}
+        <div className="flex-1 min-w-0 cursor-pointer" onClick={handleClick}>
+          <div className="text-sm text-gray-900 truncate font-medium">{name}</div>
+          {type === "post" && description && (
+            <div className="text-xs text-gray-500 truncate">{description}</div>
+          )}
+        </div>
+
+        {/* Type */}
+        <div className="flex-shrink-0 mx-2 hidden md:block">
+          <span className="text-xs text-gray-400 uppercase">
+            {type === "folder" ? "Folder" : "Post"}
+          </span>
+        </div>
+
+        {/* Date */}
+        <div className="flex-shrink-0 w-10 mx-6 text-right hidden sm:block">
+          <span className="text-xs text-gray-500">
+            {formatDate(item.createdAt)}
+          </span>
+        </div>
       </div>
 
-      {/* Name */}
-      <div className="flex-1 min-w-0 cursor-pointer" onClick={handleClick}>
-        <div className="text-sm text-gray-900 truncate font-medium">{name}</div>
-        {type === "post" && description && (
-          <div className="text-xs text-gray-500 truncate">{description}</div>
-        )}
-      </div>
-
-      {/* Type */}
-      <div className="flex-shrink-0 mx-2 hidden md:block">
-        <span className="text-xs text-gray-400 uppercase">
-          {type === "folder" ? "Folder" : "Post"}
-        </span>
-      </div>
-
-      {/* Date */}
-      <div className="flex-shrink-0 w-10 mx-6 text-right hidden sm:block">
-        <span className="text-xs text-gray-500">
-          {formatDate(item.createdAt)}
-        </span>
-      </div>
 
       {/* Edit */}
-      {!explorerStore.editorMode && (
-        <FolderMenu
-          onMove={() => {
-            explorerStore.addSelectedItem({ item, type });
-            explorerStore.setOpenMoveModal(true)}
-          }
-          onEdit={() => console.log("Edit clicked")}
-          onDelete={() => {
-            explorerStore.addSelectedItem({ item, type });
-            explorerStore.setOpenDeleteModal(true);
-          }}
-        />
-      )}
+      <FolderMenu
+        onMove={() => {
+          explorerStore.addSelectedItem({ item, type });
+          explorerStore.setOpenMoveModal(true);
+        }}
+        onDelete={() => {
+          explorerStore.addSelectedItem({ item, type });
+          explorerStore.setOpenDeleteModal(true);
+        }}
+        onEdit={explorerStore.editorMode ? undefined : () => console.log("Edit clicked")}
+      />
     </div>
   );
 };
@@ -192,20 +199,6 @@ export default function Explorer() {
                   create_new_folder
                 </i>
               </button>
-              {explorerStore.editorMode && (
-                <button
-                  title="Move or delete selected items"
-                  className="bg-transparent border-[1px] border-black rounded-full width-10 height-10 flex items-center justify-center p-1 hover:bg-gray-200 hover:cursor-pointer"
-                  disabled={!explorerStore.editorMode}
-                >
-                  <FolderMenu
-                    onMove={() => explorerStore.setOpenMoveModal(true)}
-                    onDelete={() => {
-                      explorerStore.setOpenDeleteModal(true);
-                    }}
-                  />
-                </button>
-              )}
               <button
                 title="Move or delete selected items"
                 onClick={() =>
@@ -322,7 +315,7 @@ export default function Explorer() {
       <CreatePost
         open={explorerStore.openCreatePostModal}
         onConfirm={explorerHooks.addNewPost}
-        ></CreatePost>
+      ></CreatePost>
     </div>
   );
 }

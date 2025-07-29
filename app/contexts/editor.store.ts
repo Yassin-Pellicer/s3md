@@ -12,6 +12,9 @@ interface EditorState {
   image?: File | null;
   setImage: (image: File | null) => void;
 
+  routeChangeModalOpen: boolean;
+  setRouteChangeModalOpen: (open: boolean) => void;
+
   post: Post;
   setCreatedAt: (date: Date) => void;
   setRoute: (route: string) => void;
@@ -31,6 +34,9 @@ export const useEditorStore = create<EditorState>((set) => ({
 
   image: null,
   setImage: (image) => set({ image }),
+
+  routeChangeModalOpen: false,
+  setRouteChangeModalOpen: (open) => set({ routeChangeModalOpen: open }),
 
   post: {
     createdAt: undefined,

@@ -16,13 +16,6 @@ const MoveItemsModal = ({
 }) => {
   const folderHooks = hooks(onConfirm);
 
-  const singleItem =
-    items.length === 1 && items[0].type === "post"
-      ? (items[0].item as Post)
-      : items.length === 1 && items[0].type === "folder"
-      ? (items[0].item as Folder)
-      : null;
-
   return (
     <Dialog
       open={open}
