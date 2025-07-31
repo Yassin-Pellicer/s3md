@@ -11,10 +11,10 @@ export default function RootLayout({
       <head>
         <title>MarkDown Uploader</title>
       </head>
-      <body className="h-full overflow-hidden m-0 p-0">
-        <div className="flex h-full">
-            <Menu></Menu>
-          <div className="flex h-full w-full overflow-y-auto bg-white p-6">
+      <body className="h-full">
+        <div className="flex xl:flex-row flex-col h-full">
+          <Menu></Menu>
+          <div className="flex h-full w-full overflow-y-auto justify-center bg-white">
             {children}
           </div>
         </div>

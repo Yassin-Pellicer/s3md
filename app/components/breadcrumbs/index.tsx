@@ -10,16 +10,17 @@ const BreadcrumbNavigator = ({
 }) => {
   const scrollContainerRef = hooks([route]);
   const pathParts = route?.split("/").filter((part) => part) || [];
-
+  
   return (
     <div
       ref={scrollContainerRef}
-      className="items-center px-2 py-1 text-xs bg-gray-100 rounded-xl"
+      className="flex items-center px-2 py-1 text-xs bg-gray-100 rounded-xl w-full overflow-x-auto overflow-y-hidden"
       style={{
+        scrollbarWidth: "thin",
         scrollbarColor: "#cbd5e1 #f1f5f9",
       }}
     >
-      <div className="text-sm text-gray-700 whitespace-nowrap scrollbar-thin scrollbar-thumb-slate-300 overflow-x-auto w-full">
+      <div className="text-sm text-gray-700 whitespace-nowrap inline-flex min-w-max">
         📁
         {pathParts.map((part, index) => (
           <span key={index}>

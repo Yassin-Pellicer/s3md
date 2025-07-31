@@ -143,24 +143,6 @@ export default function Explorer({ mode }: { mode: "guest" | "move" | null }) {
         </div>
       </div>
 
-      {/* List Header */}
-      {scoutStore.allItems.length > 0 && (
-        <div className="flex py-2 align-center items-center">
-          {/* Icon */}
-          <div className="flex-1 flex items-center font-light text-gray-500">
-            RESOURCE
-          </div>
-
-          {/* Type */}
-          <div className="mx-8 hidden md:block font-light text-gray-500">
-            TYPE
-          </div>
-
-          {/* Date */}
-          <div className=" text-right font-light text-gray-500">MODIFIED</div>
-        </div>
-      )}
-
       {/* File List */}
       <div className="bg-white h-[35vh] overflow-y-auto">
         {mode === "move" ? (

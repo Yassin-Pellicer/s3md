@@ -25,11 +25,33 @@ export class PostRepository {
    * @returns The post with the given ID, or null if no such post exists. The
    * returned post includes its subjects.
    */
-  getById(id: string): Promise<Post | null> {
-    return prisma.post.findUnique({
+  async getById(id: string): Promise<{
+    post: Post;
+    html?: string;
+    img?: Blob;
+  } | null> {
+    const post = await prisma.post.findUnique({
       where: { id },
       include: { subjects: true },
     });
+
+    if (!post) return null;
+
+    const htmlKey = `${post.route}/${post.title}_${post.id}/${post.title}.post`;
+    const imgKey = `${post.route}/${post.title}_${post.id}/${post.title}.img`;
+
+    const htmlResult = await getFromS3(htmlKey).catch(() => null);
+    const imgResult = await getFromS3(imgKey).catch(() => null);
+
+    return {
+      post,
+      html: htmlResult?.buffer?.toString("utf-8"),
+      img: imgResult?.buffer
+        ? new Blob([imgResult.buffer], {
+            type: imgResult.contentType || "image/png",
+          })
+        : undefined,
+    };
   }
 
   /**
@@ -44,28 +66,39 @@ export class PostRepository {
    * @returns The newly created post.
    */
   async create(data: any, image?: Blob, file?: Blob | null): Promise<Post> {
-    const post: Post = await prisma.post.create({ data });
+    const existingPost = data?.id
+      ? await prisma.post.findUnique({
+          where: { id: data.id },
+        })
+      : null;
+
+    let post: Post;
+    if (existingPost) {
+      post = await prisma.post.upsert({
+        where: { id: data.id },
+        update: { ...data, subjects: undefined },
+        create: { ...data, subjects: undefined },
+      });
+    } else {
+      post = await prisma.post.create({ data });
+    }
 
     if (file && file.size > 0) {
       const htmlBuffer = Buffer.from(await file.arrayBuffer());
-
       const htmlResult = await uploadToS3({
         key: `${post.route}/${post.title}_${post.id}/${post.title}.post`,
         body: htmlBuffer,
         contentType: "text/html",
       });
-      console.log("htmlResult", htmlResult);
     }
 
     if (image && image.size > 0) {
       const imageBuffer = Buffer.from(await image.arrayBuffer());
-
       const imageResult = await uploadToS3({
         key: `${post.route}/${post.title}_${post.id}/${post.title}.img`,
         body: imageBuffer,
         contentType: image.type || "image/png",
       });
-      console.log("imageResult", imageResult);
     }
 
     return post;
@@ -121,8 +154,12 @@ export class PostRepository {
     const imgDataResult = await getFromS3(`${s3KeyBase}${post.title}.img`);
     const postDataResult = await getFromS3(`${s3KeyBase}${post.title}.post`);
 
-    const imgBlob = imgDataResult ? new Blob([imgDataResult.buffer], { type: imgDataResult.contentType }) : undefined;
-    const postBlob = postDataResult ? new Blob([postDataResult.buffer], { type: postDataResult.contentType }) : undefined;
+    const imgBlob = imgDataResult
+      ? new Blob([imgDataResult.buffer], { type: imgDataResult.contentType })
+      : undefined;
+    const postBlob = postDataResult
+      ? new Blob([postDataResult.buffer], { type: postDataResult.contentType })
+      : undefined;
 
     post.route = route;
 

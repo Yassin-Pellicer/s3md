@@ -35,10 +35,7 @@ body {
   min-height: 300px !important;
   padding: 10px !important;
   box-sizing: border-box;
-  height: 100%;
   margin: 0;
-  max-width: 800px !important;
-  width: auto !important;
   font-family: 'Merriweather', serif !important;
   font-size: 16px !important;
   position: relative;
@@ -55,4 +52,33 @@ body {
   padding: 16px !important;
   border-top-left-radius: 14px !important;
   border-top-right-radius: 14px !important;
+}
+
+/* For Chrome, Safari, Edge */
+::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}
+
+/* For Firefox */
+body, * {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+
+.quill-content h1 {
+  font-size: 1.75rem;
+}
+
+.quill-content h2 {
+  font-size: 1.50rem;
+}
+
+.quill-content h3 {
+  font-size: 1.25rem;
+}
+
+.quill-content img {
+  display: block !important;
+  margin: 0 auto !important;
 }

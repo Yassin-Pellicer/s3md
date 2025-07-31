@@ -9,6 +9,9 @@ interface ExplorerStore {
   isFinding: boolean;
   setIsFinding: (finding: boolean) => void;
 
+  isEditing: boolean;
+  setIsEditing: (editing: boolean) => void;
+
   posts: Post[];
   setPosts: (posts: Post[]) => void;
 
@@ -66,6 +69,9 @@ export const useExplorerStore = create<ExplorerStore>((set, get) => ({
 
   isFinding: false,
   setIsFinding: (finding: boolean) => set({ isFinding: finding }),
+
+  isEditing: false,
+  setIsEditing: (editing: boolean) => set({ isEditing: editing }),
 
   posts: [],
   setPosts: (posts: Post[]) => set({ posts }),

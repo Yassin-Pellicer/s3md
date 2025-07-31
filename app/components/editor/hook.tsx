@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuill } from "react-quilljs";
 import { useEditorStore } from "../../contexts/editor.store";
 import { uploadPostAction } from "@/app/server/item.action";
@@ -7,6 +7,64 @@ import { useExplorerStore } from "@/app/contexts/explorer.store";
 export const hooks = () => {
   const editorStore = useEditorStore();
   const explorerStore = useExplorerStore();
+  const [activeButton, setActiveButton] = useState('create');
+  const [dragActive, setDragActive] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([] as UploadedFile[]);
+
+  interface UploadedFile {
+    id: string;
+    name: string;
+    size: number;
+    type: string;
+    file: File;
+  }
+
+  const handleDrag = (e: React.DragEvent<HTMLDivElement>): void => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>): void => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+
+    const files: File[] = Array.from(e.dataTransfer.files);
+    handleFiles(files);
+  };
+
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    const files: File[] = Array.from(e.target.files || []);
+    handleFiles(files);
+  };
+
+  const handleFiles = (files: File[]): void => {
+    const newFiles: UploadedFile[] = files.map((file: File) => ({
+      id: Math.random().toString(36).substr(2, 9),
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      file: file
+    }));
+    setUploadedFiles(prev => [...prev, ...newFiles]);
+  };
+
+  const removeFile = (fileId: string): void => {
+    setUploadedFiles(prev => prev.filter(file => file.id! !== fileId));
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
 
   useEffect(() => {
     editorStore.setRoute(explorerStore.route);
@@ -28,7 +86,10 @@ export const hooks = () => {
   });
 
   useEffect(() => {
-    const editorContainer = quill?.root;
+    if (!quill) return;
+
+    const editorContainer = quill.root;
+
     const onDrop = (e: DragEvent) => {
       e.preventDefault();
       const files = e.dataTransfer?.files;
@@ -37,17 +98,38 @@ export const hooks = () => {
           if (file.type.startsWith("image/")) {
             const reader = new FileReader();
             reader.onload = () => {
-              const range = quill?.getSelection();
-              quill?.insertEmbed(range?.index || 0, "image", reader.result);
+              const range = quill.getSelection();
+              quill.insertEmbed(range?.index || 0, "image", reader.result as string);
             };
             reader.readAsDataURL(file);
           }
         });
       }
     };
-    editorContainer?.addEventListener("drop", onDrop);
-    return () => editorContainer?.removeEventListener("drop", onDrop);
+
+    const onTextChange = () => {
+      const html = quill.root.innerHTML;
+      editorStore.setHtmlContent(html);
+    };
+
+    editorContainer.addEventListener("drop", onDrop);
+    quill.on("text-change", onTextChange);
+
+    editorStore.setHtmlContent(quill.root.innerHTML);
+
+    return () => {
+      editorContainer.removeEventListener("drop", onDrop);
+      quill.off("text-change", onTextChange);
+    };
   }, [quill]);
+
+  useEffect(() => {
+    if (!quill || !editorStore.htmlContent) return;
+
+    quill.clipboard.dangerouslyPasteHTML(editorStore.htmlContent, 'silent');
+    const length = quill.getLength();
+    quill.setSelection(length, 0);
+  }, [quill, editorStore.htmlContent]);
 
   const uploadContent = async () => {
     editorStore.setUploading(true);
@@ -74,7 +156,17 @@ export const hooks = () => {
 
   return {
     uploadContent,
+    activeButton,
+    setActiveButton,
     quillRef,
     quill,
+    dragActive,
+    handleDrag,
+    handleDrop,
+    handleFileInput,
+    uploadedFiles,
+    removeFile,
+    formatFileSize,
+    setUploadedFiles
   };
 };

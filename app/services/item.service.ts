@@ -17,6 +17,16 @@ export class itemsService {
     return { folders, posts };
   }
 
+  async getItemById(id: string, type: string | null): Promise<{ post: Post; html?: string; img?: Blob } | Folder | null | undefined> {
+    if (type === "folder") {
+      return await folderRepository.getById(id);
+    }
+    if (type === "post") {
+      return await postRepository.getById(id);
+    }
+    return undefined;
+  }
+
   /**
    * Create a new post. The post is expected to have a valid route field.
    * @param post The post to create.

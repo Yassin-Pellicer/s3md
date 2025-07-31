@@ -79,6 +79,10 @@ export async function getItemsFromRouteAction(route: string) {
   return await itemsServices.getItemsFromRoute(route);
 }
 
+export async function getItemByIdAction(id: string, type: "folder" | "post") {
+  return await itemsServices.getItemById(id, type);
+}
+
 /**
  * Deletes multiple items from the server.
  * @param items An array of objects with properties:

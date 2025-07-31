@@ -14,13 +14,16 @@ import CreatePost from "./modal/create/post";
 const ExplorerItem = ({
   item,
   onFolderClick,
+  onPostClick,
   type,
 }: {
   item: Post | Folder;
   onFolderClick?: (folderName: string) => void;
+  onPostClick?: (post: Post) => void;
   type: "folder" | "post";
 }) => {
   const explorerStore = useExplorerStore();
+  const explorerHooks = hooks();
 
   const name = type === "folder" ? (item as Folder).name : (item as Post).title;
   const description = type === "post" ? (item as Post).description : "";
@@ -31,12 +34,13 @@ const ExplorerItem = ({
     }
     if (type === "folder" && onFolderClick)
       onFolderClick((item as Folder).name ?? "");
-    if (type === "post") return;
+    if (type === "post" && onPostClick)
+      onPostClick((item as Post) ?? "");
   };
 
   return (
     <div
-      className="flex py-2 hover:bg-blue-50 group transition-colors duration-150 align-center items-center h-11"
+      className="flex hover:bg-blue-50 group transition-colors py-2 duration-150 align-center items-center"
     >
       {explorerStore.editorMode && (
         <input
@@ -55,76 +59,94 @@ const ExplorerItem = ({
       )}
       {/* Icon */}
       <div
-        className="flex flex-row justify-between items-center w-full"
+        className="flex flex-row justify-between items-center w-full hover:cursor-pointer"
         onClick={() => {
           if (explorerStore.editorMode) {
             explorerStore.toggleSelectedItem({ item: item, type: type });
           }
+          else{
+            handleClick();
+          }
         }}
       >
-        <div className="flex-shrink-0 mr-3 flex items-center">
-          {type === "folder" ? (
-            <i
-              className={`material-icons ${explorerStore.isFinding ? "text-gray-400" : ""
-                }`}
-            >
-              folder
-            </i>
-          ) : (
-            <i className="material-symbols-outlined">article</i>
-          )}
+        <div className="flex flex-row">
+          <div className="flex-shrink-0 mr-3 flex items-center">
+            {type === "folder" ? (
+              <i
+                className={`material-icons ${explorerStore.isFinding ? "text-gray-400" : ""
+                  }`}
+              >
+                folder
+              </i>
+            ) : (
+              <i className="material-symbols-outlined">article</i>
+            )}
+          </div>
+
+          {/* Name */}
+          <div className="w-full">
+            <h3 className="font-semibold text-gray-900 text-sm break-words whitespace-normal">
+              {name}
+            </h3>
+            {description && <p className="text-gray-700 text-sm break-words whitespace-normal">
+              {description && description.split(' ').length > 8 ? description.split(' ').slice(0, 8).join(' ') + '...' : description}
+            </p>}
+          </div>
+
         </div>
 
-        {/* Name */}
-        <div className="flex-1 min-w-0 cursor-pointer" onClick={handleClick}>
-          <div className="text-sm text-gray-900 truncate font-medium">{name}</div>
-          {type === "post" && description && (
-            <div className="text-xs text-gray-500 truncate">{description}</div>
-          )}
-        </div>
+        <div className="flex flex-row">
+          {/* Type */}
+          <div className="flex-shrink-0 mx-2 hidden md:block">
+            <span className="text-xs text-gray-400 uppercase">
+              {type === "folder" ? "Folder" : "Post"}
+            </span>
+          </div>
 
-        {/* Type */}
-        <div className="flex-shrink-0 mx-2 hidden md:block">
-          <span className="text-xs text-gray-400 uppercase">
-            {type === "folder" ? "Folder" : "Post"}
-          </span>
-        </div>
-
-        {/* Date */}
-        <div className="flex-shrink-0 w-10 mx-6 text-right hidden sm:block">
-          <span className="text-xs text-gray-500">
-            {formatDate(item.createdAt)}
-          </span>
+          {/* Date */}
+          <div className="flex-shrink-0 w-10 mx-6 text-right hidden sm:block">
+            <span className="text-xs text-gray-500">
+              {formatDate(item.createdAt)}
+            </span>
+          </div>
+          {/* Edit */}
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+          >
+            <FolderMenu
+              onMove={() => {
+                explorerStore.setIsEditing(false);
+                explorerStore.addSelectedItem({ item, type });
+                explorerStore.setOpenMoveModal(true);
+              }}
+              onDelete={() => {
+                explorerStore.addSelectedItem({ item, type });
+                explorerStore.setOpenDeleteModal(true);
+              }}
+              onEdit={() => {
+                explorerHooks.handlePostEdit(item as Post)
+              }}
+            />
+          </div>
         </div>
       </div>
-
-
-      {/* Edit */}
-      <FolderMenu
-        onMove={() => {
-          explorerStore.addSelectedItem({ item, type });
-          explorerStore.setOpenMoveModal(true);
-        }}
-        onDelete={() => {
-          explorerStore.addSelectedItem({ item, type });
-          explorerStore.setOpenDeleteModal(true);
-        }}
-        onEdit={explorerStore.editorMode ? undefined : () => console.log("Edit clicked")}
-      />
     </div>
   );
 };
 
-export default function Explorer() {
+export default function Explorer({ maxHeight }: { maxHeight?: string }) {
   const explorerHooks = hooks();
   const explorerStore = useExplorerStore();
 
   return (
-    <div className="mx-auto py-4 bg-white min-h-screen">
-      <div className="flex-1 flex-col items-center space-y-1">
-        <h1 className="text-3xl tracking-tighter mb-4 font-semibold text-gray-900">
-          Explorer
-        </h1>
+    <div className="bg-white w-full my-2">
+      <div className="sticky top-0 z-10 bg-white">
+        <div className="flex flex-row mb-4 space-x-2 align-center items-center">
+          <span className="material-symbols-outlined">source</span>
+          <h1 className="text-3xl tracking-tighter font-bold ">Explorer</h1>
+        </div>
         <div className="flex flex-row justify-between items-center gap-x-4 mb-4 flex-wrap gap-y-4">
           <div className="flex flex-row w-full">
             {explorerStore.route &&
@@ -146,17 +168,15 @@ export default function Explorer() {
                   </i>
                 </button>
               )}
-            <div className="w-[97.5%] mb-2">
-              <BreadcrumbNavigator
-                route={explorerStore.route}
-                onClickPart={explorerHooks.handleBreadcrumbClick}
-              />
-            </div>
+            <BreadcrumbNavigator
+              route={explorerStore.route}
+              onClickPart={explorerHooks.handleBreadcrumbClick}
+            />
           </div>
 
-          <div className="flex items-center justify-between w-full border-b-2 border-gray-200 pb-4">
-            <span className="text-sm text-gray-500">
-              {explorerStore.allItems.length} items
+          <div className="flex items-center justify-between w-full border-b-2 flex-wrap gap-4 border-gray-200 pb-4">
+            <span className="flex flex-row items-center text-sm text-gray-500">
+              {explorerStore.allItems.length} items | <span className="material-symbols-outlined ml-2 mr-1" style={{ fontSize: "18px" }}>folder</span>{explorerStore.folders.length} <span className="material-symbols-outlined ml-2 mr-1" style={{ fontSize: "18px" }}>article</span> {explorerStore.posts.length}
             </span>
             <div className="flex flex-row gap-x-1">
               <button
@@ -222,36 +242,18 @@ export default function Explorer() {
         </div>
       </div>
 
-      {/* List Header */}
-      {explorerStore.allItems.length > 0 && (
-        <div className="flex py-2 align-center items-center">
-          {/* Icon */}
-          <div className="flex-1 flex items-center font-light text-gray-500">
-            RESOURCE
-          </div>
-
-          {/* Type */}
-          <div className="mx-8 hidden md:block font-light text-gray-500">
-            TYPE
-          </div>
-
-          {/* Date */}
-          <div className=" text-right font-light text-gray-500">MODIFIED</div>
-        </div>
-      )}
-
       {/* File List */}
-      <div className="bg-white min-h-[35vh]">
+      <div className="bg-white">
         {explorerStore.allItems.length > 0 ? (
           <div className="divide-y divide-gray-100">
             {explorerStore.allItems.map(({ item, type }, index) => {
-              console.log("explorer", { item, type, index });
               return (
                 <ExplorerItem
                   key={`${type}-${item.id}-${index}`}
                   item={item}
                   type={type}
                   onFolderClick={explorerHooks.handleFolderClick}
+                  onPostClick={explorerHooks.handlePostClick}
                 />
               );
             })}
@@ -283,13 +285,6 @@ export default function Explorer() {
         )}
       </div>
 
-      {/* Status Bar */}
-      <div className="pt-2 mt-4 border-t border-gray-200 flex items-center justify-between text-xs text-gray-500">
-        <div className="flex items-center space-x-4">
-          <span>{explorerStore.folders.length} folders</span>
-          <span>{explorerStore.posts.length} files</span>
-        </div>
-      </div>
       <CreateFolderModal
         open={explorerStore.openCreateFolderModal}
         onConfirm={explorerHooks.addNewFolder}

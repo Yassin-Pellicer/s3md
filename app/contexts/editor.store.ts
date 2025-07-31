@@ -15,7 +15,12 @@ interface EditorState {
   routeChangeModalOpen: boolean;
   setRouteChangeModalOpen: (open: boolean) => void;
 
+  htmlContent: string;
+  setHtmlContent: (content: string) => void;
+
   post: Post;
+  setPost: (post: Post) => void;
+
   setCreatedAt: (date: Date) => void;
   setRoute: (route: string) => void;
   setFullpath: (fullpath: string) => void;
@@ -35,16 +40,15 @@ export const useEditorStore = create<EditorState>((set) => ({
   image: null,
   setImage: (image) => set({ image }),
 
+  htmlContent: "",
+  setHtmlContent: (content) => set({ htmlContent: content }),
+
   routeChangeModalOpen: false,
   setRouteChangeModalOpen: (open) => set({ routeChangeModalOpen: open }),
 
-  post: {
-    createdAt: undefined,
-    route: "",
-    title: "",
-    description: "",
-    subjects: undefined,
-  },
+  post: {} as Post,
+
+  setPost: (post) => set({ post }),
 
   setCreatedAt: (date) =>
     set((state) => ({ post: { ...state.post, createdAt: date } })),

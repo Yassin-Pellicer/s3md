@@ -3,7 +3,7 @@ import Explorer from "./components/explorer";
 
 export default function Home() {
   return (
-    <div className="max-w-screen-md mx-auto my-12 px-8">
+    <div className="mx-auto my-12 px-8">
       <Editor />
       <Explorer />
     </div>

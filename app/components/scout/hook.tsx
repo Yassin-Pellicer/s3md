@@ -63,6 +63,10 @@ export const hooks = ( mode : "move" | "guest" | null) => {
     fetchContent(mode === "move" ? explorerStore.route : scoutStore.route);
   }, []);
 
+  useEffect(() => {
+    fetchContent(scoutStore.route);
+  }, [scoutStore.route])
+
   return {
     handleBreadcrumbClick,
     fetchContent,
