@@ -4,8 +4,7 @@ import { hooks } from "./hook";
 import { useEditorStore } from "../../contexts/editor.store";
 import BreadcrumbNavigator from "../breadcrumbs";
 import { useExplorerStore } from "@/app/contexts/explorer.store";
-import ChangeRoute from "./modal/change/route/post";
-import { Calendar, User } from "lucide-react";
+import ChangeRoute from "./modal/change/route/item";
 
 export default function QuillEditor() {
   const editorHooks = hooks();
