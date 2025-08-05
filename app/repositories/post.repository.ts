@@ -9,6 +9,7 @@ import {
 import prisma from "../prisma/client";
 import { Post } from "../types/Post";
 import { Readable } from "stream";
+import { BlogEntry } from "../types/BlogEntry";
 
 export class PostRepository {
   /**
@@ -28,7 +29,7 @@ export class PostRepository {
   async getById(id: string): Promise<{
     post: Post;
     html?: string;
-    img?: Blob;
+    img?: string;
   } | null> {
     const post = await prisma.post.findUnique({
       where: { id },
@@ -46,11 +47,7 @@ export class PostRepository {
     return {
       post,
       html: htmlResult?.buffer?.toString("utf-8"),
-      img: imgResult?.buffer
-        ? new Blob([imgResult.buffer], {
-            type: imgResult.contentType || "image/png",
-          })
-        : undefined,
+      img: imgResult?.buffer?.toString("base64"),
     };
   }
 
@@ -132,8 +129,6 @@ export class PostRepository {
 
   async getPostsFromRoute(route: string): Promise<Post[]> {
     try {
-      const allPosts = await prisma.post.findMany();
-
       const posts = await prisma.post.findMany({
         where: { route },
       });
@@ -143,6 +138,25 @@ export class PostRepository {
       console.error("Database query error:", error);
       throw error;
     }
+  }
+
+  async getBlogEntriesFromRoute(route: string): Promise<BlogEntry[]> {
+    let blogEntries: BlogEntry[] = [];
+
+    const posts = this.getPostsFromRoute(route);
+
+    for (const post of await posts) {
+      const imgKey = `${post.route}/${post.title}_${post.id}/${post.title}.img`;
+
+      const imgResult = await getFromS3(imgKey).catch(() => null);
+
+      blogEntries.push({
+        ...post,
+        img: imgResult?.buffer?.toString("base64"),
+      });
+    }
+
+    return blogEntries;
   }
 
   async move(id: string, route: string): Promise<Post> {

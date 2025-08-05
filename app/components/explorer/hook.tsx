@@ -33,36 +33,18 @@ export const hooks = () => {
   const handlePostClick = async (post: Post) => {
     explorerStore.setSelectedItems([]);
     if (explorerStore.editorMode) return;
-    explorerStore.setIsEditing(false); 
+    explorerStore.setIsEditing(false);
     explorerStore.addSelectedItem({ item: post, type: "post" });
   }
-
-  const handlePostEdit = async (post: Post) => {
-    const item = await getItemByIdAction(post.id!, "post");
-    if (
-      item && typeof item === "object" && "post" in item
-    ) {
-      const { post: fetchedPost, html, img } = item;
-      editorStore.setPost(fetchedPost);
-      console.log(html);
-      html !== undefined ? editorStore.setHtmlContent(html!) : editorStore.setHtmlContent("<p></br><p>");
-      img ? editorStore.setImage(new File([img], `${post.title}.png`)) : editorStore.setImage(null);
-      
-      explorerStore.setSelectedItems([]);
-      explorerStore.setIsEditing(true);
-
-    } else {
-      console.warn("Returned item is not a valid post with buffers.");
-    }
-  };
 
   const handleBackClick = async () => {
     if (explorerStore.isFinding) return;
     explorerStore.setIsFinding(true);
 
     const pathParts = explorerStore.route.split("/");
-    if (pathParts[pathParts.length - 1] != explorerStore.baseRoute)
+    if (pathParts[pathParts.length - 1] != explorerStore.baseRoute) {
       pathParts.pop();
+    }
     const parentRoute = pathParts.join("/");
     explorerStore.setRoute(parentRoute);
     await fetchContent(parentRoute);
@@ -145,7 +127,6 @@ export const hooks = () => {
   }, [explorerStore.route])
 
   return {
-    handlePostEdit,
     handlePostClick,
     addNewPost,
     moveItems,

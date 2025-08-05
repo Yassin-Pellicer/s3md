@@ -6,11 +6,12 @@ import { Post } from "@/app/types/Post";
 
 export default function Home() {
   const explorerStore = useExplorerStore();
-  return (<>
-    {!explorerStore.editorMode && explorerStore.selectedItems.length === 1 && <PostViewer post={explorerStore.selectedItems[0].item as Post} />}
-    <div style={{ display: explorerStore.isEditing ? "initial" : "none" }}>
-      <Editor />
-    </div>
-  </>
+  return (
+    <>
+      {!explorerStore.isEditing && explorerStore.selectedItems.length === 1 && <PostViewer post={explorerStore.selectedItems[0].item as Post} />}
+      {explorerStore.isEditing && <div style={{ display: explorerStore.isEditing ? "initial" : "none" }}>
+        <Editor />
+      </div>}
+    </>
   );
 }

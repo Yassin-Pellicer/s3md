@@ -37,6 +37,10 @@ export async function uploadPostAction(formData: FormData) {
   }
 }
 
+export async function getBlogEntriesAction(route: string) {
+  return await itemsServices.getBlogEntriesFromRoute(route);
+}
+
 /**
  * Uploads a folder to the server.
  * @param formData The form data with the keys:

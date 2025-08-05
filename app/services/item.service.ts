@@ -1,5 +1,6 @@
 import folderRepository from "../repositories/folder.repository";
 import postRepository from "../repositories/post.repository";
+import { BlogEntry } from "../types/BlogEntry";
 
 import { Folder } from "../types/Folder";
 import { Post } from "../types/Post";
@@ -17,7 +18,15 @@ export class itemsService {
     return { folders, posts };
   }
 
-  async getItemById(id: string, type: string | null): Promise<{ post: Post; html?: string; img?: Blob } | Folder | null | undefined> {
+  async getPostsFromRoute(route: string): Promise<Post[]> {
+    return await postRepository.getPostsFromRoute(route);
+  }
+
+  async getBlogEntriesFromRoute(route: string): Promise<BlogEntry[]> {
+    return await postRepository.getBlogEntriesFromRoute(route);
+  }
+
+  async getItemById(id: string, type: string | null): Promise<{ post: Post; html?: string; img?: string } | Folder | null | undefined> {
     if (type === "folder") {
       return await folderRepository.getById(id);
     }

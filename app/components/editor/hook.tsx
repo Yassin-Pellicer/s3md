@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
 import { useQuill } from "react-quilljs";
 import { useEditorStore } from "../../contexts/editor.store";
-import { uploadPostAction } from "@/app/server/item.action";
+import { getItemByIdAction, uploadPostAction } from "@/app/server/item.action";
 import { useExplorerStore } from "@/app/contexts/explorer.store";
+import { Post } from "@/app/types/Post";
 
 export const hooks = () => {
   const editorStore = useEditorStore();
   const explorerStore = useExplorerStore();
   const [activeButton, setActiveButton] = useState('create');
   const [dragActive, setDragActive] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([] as UploadedFile[]);
 
   interface UploadedFile {
@@ -66,6 +68,18 @@ export const hooks = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  const convertImage = (file?: File): Promise<string> => {
+    if (!file) {
+      return Promise.resolve('');
+    }
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+      reader.readAsDataURL(file);
+    });
+  };
+
   useEffect(() => {
     editorStore.setRoute(explorerStore.route);
   }, [explorerStore.route]);
@@ -119,17 +133,32 @@ export const hooks = () => {
 
     return () => {
       editorContainer.removeEventListener("drop", onDrop);
-      quill.off("text-change", onTextChange);
     };
   }, [quill]);
 
   useEffect(() => {
-    if (!quill || !editorStore.htmlContent) return;
+    if (quill && explorerStore.isEditing && editorStore.post) {
+      editorStore.setHtmlContent("<p><br/></p>");      
+      quill.clipboard.dangerouslyPasteHTML("<p><br/></p>");
+      editorStore.setImage(null);
+      fetchContent(editorStore.post);
+    }
+  }, [quill, explorerStore.isEditing, editorStore.post.id]);
 
-    quill.clipboard.dangerouslyPasteHTML(editorStore.htmlContent, 'silent');
-    const length = quill.getLength();
-    quill.setSelection(length, 0);
-  }, [quill, editorStore.htmlContent]);
+  const fetchContent = async (post: Post) => {
+    setIsLoading(true);
+    const item = await getItemByIdAction(post.id!, "post");
+    if (item && typeof item === "object" && "post" in item) {
+      const { html, img } = item;
+      html && editorStore.setHtmlContent(html);
+      img && editorStore.setImage(img);
+
+      quill!.clipboard.dangerouslyPasteHTML(html!);
+      setIsLoading(false);
+    } else {
+      console.warn("Returned item is not a valid post with buffers.");
+    }
+  }
 
   const uploadContent = async () => {
     editorStore.setUploading(true);
@@ -155,6 +184,7 @@ export const hooks = () => {
   };
 
   return {
+    convertImage,
     uploadContent,
     activeButton,
     setActiveButton,
@@ -167,6 +197,7 @@ export const hooks = () => {
     uploadedFiles,
     removeFile,
     formatFileSize,
-    setUploadedFiles
+    setUploadedFiles,
+    isLoading,
   };
 };

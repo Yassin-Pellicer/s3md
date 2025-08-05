@@ -10,6 +10,7 @@ import FolderMenu from "./modal/info";
 import DeleteItems from "./modal/delete/item";
 import MoveItems from "./modal/change/location/item";
 import CreatePost from "./modal/create/post";
+import { useEditorStore } from "@/app/contexts/editor.store";
 
 const ExplorerItem = ({
   item,
@@ -24,6 +25,7 @@ const ExplorerItem = ({
 }) => {
   const explorerStore = useExplorerStore();
   const explorerHooks = hooks();
+  const editorStore = useEditorStore();
 
   const name = type === "folder" ? (item as Folder).name : (item as Post).title;
   const description = type === "post" ? (item as Post).description : "";
@@ -126,7 +128,8 @@ const ExplorerItem = ({
                 explorerStore.setOpenDeleteModal(true);
               }}
               onEdit={() => {
-                explorerHooks.handlePostEdit(item as Post)
+                editorStore.setPost(item as Post);
+                explorerStore.setIsEditing(true);
               }}
             />
           </div>

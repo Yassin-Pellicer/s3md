@@ -1,10 +1,12 @@
+import { useEditorStore } from "@/app/contexts/editor.store";
 import { getItemByIdAction } from "@/app/server/item.action";
 import { Post } from "@/app/types/Post";
 import { useEffect, useState } from "react";
 
 export const hooks = (post: Post) => {
   const [htmlContent, setHtmlContent] = useState<string>("");
-  const [image, setImage] = useState<File | null>(null);
+  const [image, setImage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setHtmlContent("");
@@ -24,22 +26,14 @@ export const hooks = (post: Post) => {
   };
 
   const fetchContent = async (post: Post) => {
+    setIsLoading(true);
     const item = await getItemByIdAction(post.id!, "post");
     if (item && typeof item === "object" && "post" in item) {
-      const { post: fetchedPost, html, img } = item;
-      console.log(html);
+      const { post, html, img } = item;
       html && setHtmlContent(html);
+      img && setImage(img);
 
-      if (img) {
-        const objectURL = URL.createObjectURL(img);
-
-        const file = new File([img], `${post.title}.png`, {
-          type: img.type || "image/png"
-        });
-
-        console.log(file);
-        setImage(file);
-      }
+      setIsLoading(false);
     } else {
       console.warn("Returned item is not a valid post with buffers.");
     }
@@ -49,7 +43,8 @@ export const hooks = (post: Post) => {
     formatDate,
     fetchContent,
     htmlContent,
-    image
+    image,
+    isLoading
   };
 };
 

@@ -118,6 +118,14 @@ export class FolderRepository {
       },
     });
 
+    await prisma.post.deleteMany({
+      where: {
+        route: {
+          startsWith: `${routePrefix}/${folderToDelete.name}`,
+        },
+      },
+    });
+
     const deletedFolder = await prisma.folder.delete({
       where: { id },
     });
