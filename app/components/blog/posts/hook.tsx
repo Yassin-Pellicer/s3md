@@ -1,12 +1,14 @@
+"use client";
+import { useExplorerStore } from "@/app/contexts/explorer.store";
 import { getBlogEntriesAction, getItemByIdAction } from "@/app/server/item.action";
 import { BlogEntry } from "@/app/types/BlogEntry";
-import { Post } from "@/app/types/Post";
 import { useEffect, useState } from "react";
 
 export const hooks = () => {
   const [blogEntries, setBlogEntries] = useState<BlogEntry[]>([]);
-
+  const explorerStore = useExplorerStore();
   useEffect(() => {
+    explorerStore.setSelectedItems([]);
     fetchContent();
   }, []);
 

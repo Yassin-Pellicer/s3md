@@ -5,7 +5,7 @@ import { useEditorStore } from "../../contexts/editor.store";
 import BreadcrumbNavigator from "../breadcrumbs";
 import { useExplorerStore } from "@/app/contexts/explorer.store";
 import ChangeRoute from "./modal/change/route/item";
-import { Calendar, User } from "lucide-react";
+import { ArrowRight, Calendar, User } from "lucide-react";
 import { InViewSection } from "../motion";
 
 export default function QuillEditor() {
@@ -106,39 +106,54 @@ export default function QuillEditor() {
           </div>
         </div>}
 
-        <article className="flex flex-row max-w-4xl w-full bg-white rounded-xl shadow-sm mb-8 overflow-hidden">
-          <div className="relative max-h-64 max-w-64 w-full overflow-hidden">
+        <article
+          className="select-none hover:cursor-pointer group bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100 mb-4"
+        >
+          {/* Image Container */}
+          <div className="relative h-68 overflow-hidden">
             <img
-              src={editorStore.image ? `data:image/jpeg;base64,${editorStore.image}` : "https://placehold.co/600x400?text=📸"}
-              className="w-full h-full object-cover"
+              src={editorStore.image ? `data:image/jpeg;base64,${editorStore.image}` : "https://placehold.co/300x200/cccccc/cccccc.png?text=+"}
+              alt={editorStore.post.title || "Article image"}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+
+
+            {/* Floating Action */}
+            <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div className="bg-white/90 backdrop-blur-sm rounded-full p-2">
+                <ArrowRight className="w-4 h-4 text-gray-700" />
+              </div>
+            </div>
           </div>
 
           {/* Content */}
-          <div className="px-6 py-4">
+          <div className="p-6 flex flex-col">
             {/* Metadata */}
-            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-4">
-              {/* {post.author && ( */}
-              <div className="flex items-center gap-1">
-                <User className="w-4 h-4" />
-                <span>Yassin Pellicer</span>
+            <div className="flex flex-col justify-between text-sm text-gray-500 mb-4">
+              <div className="flex items-center gap-4 mb-2">
+                <div className="flex items-center gap-1">
+                  <User className="w-4 h-4 " />
+                  <span>Yassin Pellicer</span>
+                </div>
               </div>
+
+              {/* Title */}
+              {editorStore.post.title && (
+                <h2 className="text-xl font-bold text-gray-900 mb-3 leading-tight group-hover:text-blue-600 transition-colors duration-200">
+                  {editorStore.post.title.length > 60 ? `${editorStore.post.title.slice(0, 60)}...` : editorStore.post.title}
+                </h2>
+              )}
+
+              {/* Description */}
+              {editorStore.post.description && (
+                <p className="text-gray-600 leading-relaxed mb-4">
+                  {editorStore.post.description.length > 120
+                    ? `${editorStore.post.description.slice(0, 120)}...`
+                    : editorStore.post.description}
+                </p>
+              )}
             </div>
-
-            {/* Title */}
-            {editorStore.post.title && (
-              <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 leading-tight">
-                {editorStore.post.title}
-              </h1>
-            )}
-
-            {/* Description */}
-            {editorStore.post.description && (
-              <p className="text-sm text-gray-700 mb-6 leading-relaxed">
-                {editorStore.post.description && editorStore.post.description.split(' ').length > 16 ? editorStore.post.description.split(' ').slice(0, 8).join(' ') + '...' : editorStore.post.description}
-              </p>
-            )}
           </div>
         </article>
 

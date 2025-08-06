@@ -3,7 +3,7 @@ import { getItemByIdAction } from "@/app/server/item.action";
 import { Post } from "@/app/types/Post";
 import { useEffect, useState } from "react";
 
-export const hooks = (post: Post) => {
+export const hooks = (post: Post | null) => {
   const [htmlContent, setHtmlContent] = useState<string>("");
   const [image, setImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -12,7 +12,7 @@ export const hooks = (post: Post) => {
     setHtmlContent("");
     setImage(null);
     fetchContent(post);
-  }, [post]);
+  }, [post?.id]);
 
   const formatDate = (date: Date | undefined) => {
     if (!date) return "No date";
@@ -25,7 +25,16 @@ export const hooks = (post: Post) => {
     }).format(new Date(date));
   };
 
-  const fetchContent = async (post: Post) => {
+  const calculateReadTime = (content: string) => {
+    const wordsPerMinute = 200;
+    const wordCount = content.trim().split(/\s+/).length;
+    const readTime = Math.ceil(wordCount / wordsPerMinute);
+    return readTime;
+  };
+
+  const fetchContent = async (post: Post | null) => {
+    if (!post) return;
+    console.log("funciona", post);
     setIsLoading(true);
     const item = await getItemByIdAction(post.id!, "post");
     if (item && typeof item === "object" && "post" in item) {
@@ -40,11 +49,13 @@ export const hooks = (post: Post) => {
   }
 
   return {
+    calculateReadTime,
     formatDate,
     fetchContent,
     htmlContent,
     image,
-    isLoading
+    isLoading,
+    setIsLoading
   };
 };
 
