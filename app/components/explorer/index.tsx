@@ -144,7 +144,7 @@ export default function Explorer({ maxHeight }: { maxHeight?: string }) {
   const explorerStore = useExplorerStore();
 
   return (
-    <div className="bg-white w-full my-2">
+    <div className="bg-white w-full my-4 px-6">
       <div className="sticky top-0 z-10 bg-white">
         <div className="flex flex-row mb-4 space-x-2 align-center items-center">
           <span className="material-symbols-outlined">source</span>

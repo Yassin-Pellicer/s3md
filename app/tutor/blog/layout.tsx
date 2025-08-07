@@ -7,10 +7,10 @@ export default function Home({
 }>) {
   return (
     <div className="flex xl:flex-row flex-col justify-between w-full divide-x divide-gray-300">
-      <div className="px-6 w-full xl:overflow-y-scroll scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-200">
+      <div className="w-full xl:overflow-y-scroll scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-200">
         <Blog />
       </div>
-      <div className="px-6 w-full xl:overflow-y-scroll scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-200">
+      <div className="w-full xl:overflow-y-scroll scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-200">
         {children}
       </div>
     </div>

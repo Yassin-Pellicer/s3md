@@ -1,12 +1,31 @@
 import { useEditorStore } from "@/app/contexts/editor.store";
 import { getItemByIdAction } from "@/app/server/item.action";
 import { Post } from "@/app/types/Post";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export const hooks = (post: Post | null) => {
   const [htmlContent, setHtmlContent] = useState<string>("");
   const [image, setImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      setIsScrolled(container.scrollTop > 400);
+    };
+
+    container.addEventListener("scroll", handleScroll);
+    handleScroll();
+
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   useEffect(() => {
     setHtmlContent("");
@@ -49,6 +68,8 @@ export const hooks = (post: Post | null) => {
   }
 
   return {
+    isScrolled,
+    scrollContainerRef,
     calculateReadTime,
     formatDate,
     fetchContent,

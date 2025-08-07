@@ -15,7 +15,7 @@ export default function QuillEditor() {
 
   return (
     <InViewSection triggerKey={editorHooks.isLoading}>
-      <div className="flex flex-col w-full my-2" style={{ display: editorHooks.isLoading ? 'none' : 'flex' }}>
+      <div className="flex flex-col w-full my-4 px-6" style={{ display: editorHooks.isLoading ? 'none' : 'flex' }}>
         <div className="flex flex-row mb-4 space-x-2 align-center items-center">
           <span className="material-symbols-outlined">create</span>
           <h1 className="text-3xl tracking-tighter font-bold ">Create content</h1>

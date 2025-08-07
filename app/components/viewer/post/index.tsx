@@ -9,31 +9,15 @@ import { InViewSection } from "../../motion";
 
 export const PostViewer = ({ post }: { post: Post }) => {
   const postHooks = hooks(post);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    const handleScroll = () => {
-      setIsScrolled(container.scrollTop > 400);
-    };
-
-    container.addEventListener("scroll", handleScroll);
-    handleScroll(); // initial check
-
-    return () => {
-      container.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
 
   return (
     <div className="relative h-full">
       <InViewSection triggerKey={postHooks.isLoading}>
         {/* Fixed Topbar (appears based on scroll) */}
         <div
-          className={`fixed top-0 left-0 right-0 z-50 mx-[-40px] py-4 border-b border-gray-300 px-10 shadow-sm bg-white transition-all duration-200 ${isScrolled
+          className={`fixed top-0 left-0 right-0 z-50 py-4 border-b border-gray-300 px-6
+            shadow-sm bg-white transition-all duration-200 ${postHooks.isScrolled
             ? "opacity-100 pointer-events-auto"
             : "opacity-0 pointer-events-none"
             }`}
@@ -76,11 +60,11 @@ export const PostViewer = ({ post }: { post: Post }) => {
         </div>
 
         <div
-          ref={scrollContainerRef}
+          ref={postHooks.scrollContainerRef}
           className="h-[100vh] overflow-y-auto"
         >
           {!postHooks.isLoading && (
-            <article className="mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+            <article className="mx-auto px-6 bg-white py-6 overflow-hidden">
               <div className="relative h-64 md:h-80 overflow-hidden">
                 <img
                   src={
@@ -88,9 +72,9 @@ export const PostViewer = ({ post }: { post: Post }) => {
                       ? `data:image/jpeg;base64,${postHooks.image}`
                       : "https://placehold.co/300x200/cccccc/cccccc.png?text=+"
                   }
-                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                  className="w-full rounded-2xl h-full object-cover transition-transform duration-300 hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                <div className="absolute rounded-2xl inset-0 bg-gradient-to-t from-black/20 to-transparent" />
               </div>
 
               {/* Content */}
