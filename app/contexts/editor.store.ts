@@ -9,8 +9,8 @@ interface EditorState {
   error: string | null;
   setError: (e: string | null) => void;
 
-  image?: string | null;
-  setImage: (image: string | null) => void;
+  image?: File | null;
+  setImage: (image: File | null) => void;
 
   routeChangeModalOpen: boolean;
   setRouteChangeModalOpen: (open: boolean) => void;

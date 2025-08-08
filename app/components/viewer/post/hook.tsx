@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 
 export const hooks = (post: Post | null) => {
   const [htmlContent, setHtmlContent] = useState<string>("");
-  const [image, setImage] = useState<string | null>(null);
+  const [image, setImage] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -59,8 +59,11 @@ export const hooks = (post: Post | null) => {
     if (item && typeof item === "object" && "post" in item) {
       const { post, html, img } = item;
       html && setHtmlContent(html);
-      img && setImage(img);
-
+      if (img) {
+        const blob = Uint8Array.from(atob(img), c => c.charCodeAt(0));
+        const file = new File([blob], "image.jpg", { type: "image/jpeg" });
+        setImage(file);
+      }
       setIsLoading(false);
     } else {
       console.warn("Returned item is not a valid post with buffers.");

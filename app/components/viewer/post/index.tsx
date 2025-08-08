@@ -10,7 +10,6 @@ import { InViewSection } from "../../motion";
 export const PostViewer = ({ post }: { post: Post }) => {
   const postHooks = hooks(post);
 
-
   return (
     <div className="relative h-full">
       <InViewSection triggerKey={postHooks.isLoading}>
@@ -18,8 +17,8 @@ export const PostViewer = ({ post }: { post: Post }) => {
         <div
           className={`fixed top-0 left-0 right-0 z-50 py-4 border-b border-gray-300 px-6
             shadow-sm bg-white transition-all duration-200 ${postHooks.isScrolled
-            ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
+              ? "opacity-100 pointer-events-auto"
+              : "opacity-0 pointer-events-none"
             }`}
         >
           {/* Metadata */}
@@ -67,11 +66,7 @@ export const PostViewer = ({ post }: { post: Post }) => {
             <article className="mx-auto px-6 bg-white py-6 overflow-hidden">
               <div className="relative h-64 md:h-80 overflow-hidden">
                 <img
-                  src={
-                    postHooks.image
-                      ? `data:image/jpeg;base64,${postHooks.image}`
-                      : "https://placehold.co/300x200/cccccc/cccccc.png?text=+"
-                  }
+              src={postHooks.image ? URL.createObjectURL(postHooks.image) : "https://placehold.co/600x400?text=📸"}
                   className="w-full rounded-2xl h-full object-cover transition-transform duration-300 hover:scale-105"
                 />
                 <div className="absolute rounded-2xl inset-0 bg-gradient-to-t from-black/20 to-transparent" />

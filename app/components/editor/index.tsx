@@ -97,7 +97,7 @@ export default function QuillEditor() {
                 <input
                   type="file"
                   onChange={(e) =>
-                    editorHooks.convertImage(e.target.files?.[0]).then(image => editorStore.setImage(image))
+                    editorStore.setImage(e.target.files![0])
                   }
                   className="hidden"
                 />
@@ -112,7 +112,7 @@ export default function QuillEditor() {
           {/* Image Container */}
           <div className="relative h-68 overflow-hidden">
             <img
-              src={editorStore.image ? `data:image/jpeg;base64,${editorStore.image}` : "https://placehold.co/300x200/cccccc/cccccc.png?text=+"}
+              src={editorStore.image ? URL.createObjectURL(editorStore.image) : "https://placehold.co/600x400?text=📸"}
               alt={editorStore.post.title || "Article image"}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />

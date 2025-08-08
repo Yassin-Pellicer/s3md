@@ -68,18 +68,6 @@ export const hooks = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const convertImage = (file?: File): Promise<string> => {
-    if (!file) {
-      return Promise.resolve('');
-    }
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = error => reject(error);
-      reader.readAsDataURL(file);
-    });
-  };
-
   useEffect(() => {
     editorStore.setRoute(explorerStore.route);
   }, [explorerStore.route]);
@@ -138,12 +126,16 @@ export const hooks = () => {
 
   useEffect(() => {
     if (quill && explorerStore.isEditing && editorStore.post) {
-      editorStore.setHtmlContent("<p><br/></p>");      
+      editorStore.setHtmlContent("<p><br/></p>");
       quill.clipboard.dangerouslyPasteHTML("<p><br/></p>");
       editorStore.setImage(null);
       fetchContent(editorStore.post);
     }
   }, [quill, explorerStore.isEditing, editorStore.post.id]);
+
+  useEffect(() => {
+    console.log(editorStore.image);
+  }, [editorStore.image]);
 
   const fetchContent = async (post: Post) => {
     setIsLoading(true);
@@ -151,7 +143,11 @@ export const hooks = () => {
     if (item && typeof item === "object" && "post" in item) {
       const { html, img } = item;
       html && editorStore.setHtmlContent(html);
-      img && editorStore.setImage(img);
+      if (img) {
+        const blob = Uint8Array.from(atob(img), c => c.charCodeAt(0));
+        const file = new File([blob], "image.jpg", { type: "image/jpeg" });
+        editorStore.setImage(file);
+      }
 
       quill!.clipboard.dangerouslyPasteHTML(html!);
       setIsLoading(false);
@@ -184,7 +180,6 @@ export const hooks = () => {
   };
 
   return {
-    convertImage,
     uploadContent,
     activeButton,
     setActiveButton,
