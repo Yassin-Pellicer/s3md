@@ -3,14 +3,12 @@ import prisma from '../prisma/client';
 export class SessionRepository {
   getAll() {
     return prisma.session.findMany({
-      include: { tutor: true, reservation: true },
     });
   }
 
   getById(id: string) {
     return prisma.session.findUnique({
       where: { id },
-      include: { tutor: true, reservation: true },
     });
   }
 

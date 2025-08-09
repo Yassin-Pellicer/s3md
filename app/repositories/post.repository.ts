@@ -17,7 +17,7 @@ export class PostRepository {
    * @returns An array of Post objects, each of which includes their subjects.
    */
   getAll(): Promise<Post[]> {
-    return prisma.post.findMany({ include: { subjects: true } });
+    return prisma.post.findMany();
   }
 
   /**
@@ -33,7 +33,6 @@ export class PostRepository {
   } | null> {
     const post = await prisma.post.findUnique({
       where: { id },
-      include: { subjects: true },
     });
 
     if (!post) return null;
