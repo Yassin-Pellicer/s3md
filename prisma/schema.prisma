@@ -16,23 +16,51 @@ model Tutor {
   email     String    @unique
   bio       String?
   avatar    String?
-  sessions  Session[]
   subjects  Subject[]
+  courses   Course[]
 }
 
 model Subject {
-  id      String @id @default(cuid())
-  tutorId String
-  topic   String
-  postId  String
-  post    Post   @relation(fields: [postId], references: [id])
-  tutor   Tutor  @relation(fields: [tutorId], references: [id])
+  id            String    @id @default(cuid())
+  tutorId       String
+  topic         String
+  postId        String
+  tutor         Tutor     @relation(fields: [tutorId], references: [id])
+  courses       Course[]
+  sessions      Session[]
+  materialRoute String
+}
+
+model Course {
+  id               String    @id @default(cuid())
+  title            String
+  description      String
+  startsAt         DateTime
+  endsAt           DateTime
+  inscriptionStart DateTime
+  inscriptionEnd   DateTime
+  tutorId          String
+  price            Int
+  duration         Int
+  date             DateTime
+  subjects         Subject[]
+  tutor            Tutor     @relation(fields: [tutorId], references: [id])
+  groups           Group[]
+}
+
+model Group {
+  id          String    @id @default(cuid())
+  title       String
+  description String
+  courseId    String
+  course      Course    @relation(fields: [courseId], references: [id])
+  sessions    Session[] // one group → many sessions
 }
 
 model Session {
-  id          String        @id @default(cuid())
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @default(now())
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
   tutorId     String
   title       String
   description String
@@ -40,8 +68,12 @@ model Session {
   duration    Int
   date        DateTime
   capacity    Int
+  groupId     String
+  subjectId   String
+
+  group       Group         @relation(fields: [groupId], references: [id])
+  subject     Subject       @relation(fields: [subjectId], references: [id])
   reservation Reservation[]
-  tutor       Tutor         @relation(fields: [tutorId], references: [id])
 }
 
 model Reservation {
@@ -58,7 +90,7 @@ model Post {
   route       String
   title       String
   description String
-  subjects    Subject[]
+  topic       String?
 }
 
 model Folder {
