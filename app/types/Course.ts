@@ -13,7 +13,6 @@ export type Course = {
   tutorId?: string;
   price?: number;
   duration?: number;
-  date?: Date;
   subjects?: Subject[];
   tutor?: Tutor;
   groups?: Group[];

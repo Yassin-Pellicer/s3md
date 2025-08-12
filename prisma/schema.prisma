@@ -41,12 +41,11 @@ model Course {
   endsAt           DateTime
   inscriptionStart DateTime
   inscriptionEnd   DateTime
-  tutorId          String
+  tutorId          String?
   price            Int
   duration         Int
-  date             DateTime
   subjects         Subject[]
-  tutor            Tutor     @relation(fields: [tutorId], references: [id])
+  tutor            Tutor?     @relation(fields: [tutorId], references: [id])
   groups           Group[]
 }
 

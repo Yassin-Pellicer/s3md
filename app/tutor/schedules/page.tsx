@@ -1,4 +1,5 @@
 "use client";
+import { CourseList } from "@/app/components/schedule/items/course/list";
 import { SubjectList } from "@/app/components/schedule/items/subject/list";
 
 export default function Blog() {
@@ -13,6 +14,9 @@ export default function Blog() {
       <div className="grid grid-cols-1 divide-x gap-4 divide-gray-300">
         <div className="p-6">
           <SubjectList></SubjectList>
+        </div>
+        <div className="p-6">
+          <CourseList></CourseList>
         </div>
       </div>
     </div>

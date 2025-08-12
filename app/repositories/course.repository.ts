@@ -1,17 +1,39 @@
 import prisma from '../prisma/client';
 
 export class CourseRepository {
-  getAll() {
-    return prisma.course.findMany();
+  getAll(includeGroups: boolean = false, includeSubjects: boolean = false) {
+    return prisma.course.findMany({
+      include: {
+        groups: includeGroups,
+        subjects: includeSubjects
+      }
+    });
   }
 
   getById(id: string) {
     return prisma.course.findUnique({ where: { id } });
   }
 
-  create(data: any) {
-    return prisma.course.create({ data });
-  }
+create(data: any) {
+  const { subjects, groups, ...rest } = data;
+
+  return prisma.course.create({
+    data: {
+      ...rest,
+      subjects: subjects?.length
+        ? {
+            connect: subjects.map((s: { id: string }) => ({ id: s.id })),
+          }
+        : undefined,
+      groups: groups?.length
+        ? {
+            connect: groups.map((g: { id: string }) => ({ id: g.id })),
+          }
+        : undefined,
+    },
+  });
+}
+
 
   update(id: string, data: any) {
     return prisma.course.update({ where: { id }, data });
