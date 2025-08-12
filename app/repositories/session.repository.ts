@@ -2,14 +2,11 @@ import prisma from '../prisma/client';
 
 export class SessionRepository {
   getAll() {
-    return prisma.session.findMany({
-    });
+    return prisma.session.findMany();
   }
 
   getById(id: string) {
-    return prisma.session.findUnique({
-      where: { id },
-    });
+    return prisma.session.findUnique({ where: { id } });
   }
 
   create(data: any) {

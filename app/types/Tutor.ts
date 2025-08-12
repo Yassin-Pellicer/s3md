@@ -1,5 +1,5 @@
-import { Session } from "inspector";
 import { Subject } from "./Subject";
+import { Course } from "./Course";
 
 export type Tutor = {
   id?: string;
@@ -8,8 +8,8 @@ export type Tutor = {
   firstName?: string;
   lastName?: string;
   email?: string;
-  bio?: string | null;
-  avatar?: string | null;
+  bio?: string;
+  avatar?: string;
   subjects?: Subject[];
-  sessions?: Session[];
+  courses?: Course[];
 };

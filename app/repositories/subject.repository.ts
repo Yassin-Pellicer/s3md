@@ -2,13 +2,11 @@ import prisma from '../prisma/client';
 
 export class SubjectRepository {
   getAll() {
-    return prisma.subject.findMany({ include: { tutor: true, post: true } });
+    return prisma.subject.findMany();
   }
 
   getById(id: string) {
-    return prisma.subject.findUnique({
-      where: { id },
-    });
+    return prisma.subject.findUnique({ where: { id } });
   }
 
   create(data: any) {

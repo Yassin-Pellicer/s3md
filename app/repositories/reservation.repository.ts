@@ -2,16 +2,11 @@ import prisma from '../prisma/client';
 
 export class ReservationRepository {
   getAll() {
-    return prisma.reservation.findMany({
-      include: { session: true },
-    });
+    return prisma.reservation.findMany();
   }
 
   getById(id: string) {
-    return prisma.reservation.findUnique({
-      where: { id },
-      include: { session: true },
-    });
+    return prisma.reservation.findUnique({ where: { id } });
   }
 
   create(data: any) {

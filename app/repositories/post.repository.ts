@@ -166,12 +166,16 @@ export class PostRepository {
 
     const imgDataResult = await getFromS3(`${s3KeyBase}${post.title}.img`);
     const postDataResult = await getFromS3(`${s3KeyBase}${post.title}.post`);
-
     const imgBlob = imgDataResult
-      ? new Blob([imgDataResult.buffer], { type: imgDataResult.contentType })
+      ? new Blob([new Uint8Array(imgDataResult.buffer)], {
+          type: imgDataResult.contentType,
+        })
       : undefined;
+
     const postBlob = postDataResult
-      ? new Blob([postDataResult.buffer], { type: postDataResult.contentType })
+      ? new Blob([new Uint8Array(postDataResult.buffer)], {
+          type: postDataResult.contentType,
+        })
       : undefined;
 
     post.route = route;

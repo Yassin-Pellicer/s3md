@@ -1,11 +1,14 @@
-import { Post } from "./Post";
 import { Tutor } from "./Tutor";
+import { Course } from "./Course";
+import { Session } from "./Session";
 
 export type Subject = {
   id?: string;
   tutorId?: string;
   topic?: string;
-  tutor?: Tutor;
   postId?: string;
-  post?: Post;
+  tutor?: Tutor;
+  courses?: Course[];
+  sessions?: Session[];
+  materialRoute?: string;
 };

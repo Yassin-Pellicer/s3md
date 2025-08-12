@@ -2,16 +2,11 @@ import prisma from '../prisma/client';
 
 export class TutorRepository {
   getAll() {
-    return prisma.tutor.findMany({
-      include: { subjects: true, sessions: true },
-    });
+    return prisma.tutor.findMany();
   }
 
   getById(id: string) {
-    return prisma.tutor.findUnique({
-      where: { id },
-      include: { subjects: true, sessions: true },
-    });
+    return prisma.tutor.findUnique({ where: { id } });
   }
 
   create(data: any) {
