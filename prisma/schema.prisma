@@ -22,13 +22,15 @@ model Tutor {
 
 model Subject {
   id            String    @id @default(cuid())
-  tutorId       String
-  topic         String
-  postId        String
-  tutor         Tutor     @relation(fields: [tutorId], references: [id])
+  tutorId       String?
+  topic         String?
+  title         String
+  description   String
+  color         String
+  tutor         Tutor?    @relation(fields: [tutorId], references: [id])
   courses       Course[]
   sessions      Session[]
-  materialRoute String
+  materialRoute String?
 }
 
 model Course {
@@ -85,8 +87,8 @@ model Reservation {
 }
 
 model Post {
-  id          String    @id @default(cuid())
-  createdAt   DateTime  @default(now())
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
   route       String
   title       String
   description String

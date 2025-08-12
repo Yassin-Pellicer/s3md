@@ -4,11 +4,13 @@ import { Session } from "./Session";
 
 export type Subject = {
   id?: string;
-  tutorId?: string;
-  topic?: string;
-  postId?: string;
-  tutor?: Tutor;
+  tutorId?: string | null;
+  topic?: string | null;
+  title: string;
+  description: string;
+  color: string;
+  tutor?: Tutor | null;
   courses?: Course[];
   sessions?: Session[];
-  materialRoute?: string;
+  materialRoute?: string | null;
 };

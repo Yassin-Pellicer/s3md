@@ -7,8 +7,8 @@ import { formatDate } from "@/app/funcs/helper.funcs";
 import BreadcrumbNavigator from "../breadcrumbs";
 import CreateFolderModal from "./modal/create/folder";
 import FolderMenu from "./modal/info";
-import DeleteItems from "./modal/delete/item";
-import MoveItems from "./modal/change/location/item";
+import DeleteItems from "./modal/delete";
+import MoveItems from "./modal/change/location";
 import CreatePost from "./modal/create/post";
 import { useEditorStore } from "@/app/contexts/editor.store";
 

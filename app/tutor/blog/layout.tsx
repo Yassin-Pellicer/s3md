@@ -1,4 +1,4 @@
-import Blog from "@/app/components/blog/menus";
+import Blog from "@/app/components/blog/menu";
 
 export default function Home({
   children,

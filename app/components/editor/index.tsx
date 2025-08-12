@@ -4,7 +4,7 @@ import { hooks } from "./hook";
 import { useEditorStore } from "../../contexts/editor.store";
 import BreadcrumbNavigator from "../breadcrumbs";
 import { useExplorerStore } from "@/app/contexts/explorer.store";
-import ChangeRoute from "./modal/change/route/item";
+import ChangeRoute from "./modal/change/route";
 import { ArrowRight, Calendar, User } from "lucide-react";
 import { InViewSection } from "../motion";
 
