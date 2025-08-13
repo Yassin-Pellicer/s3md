@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 
 export function hooks() {
   const [courses, setCourses] = useState<Course[]>([]);
-  const [openCreateSubjectModal, setOpenCreateSubjectModal] = useState(false);
+  const [OpenCreateCourseModal, setOpenCreateCourseModal] = useState(false);
 
   useEffect(() => {
     fetchContent();
@@ -18,7 +18,7 @@ export function hooks() {
   return {
     courses,
     setCourses,
-    openCreateSubjectModal,
-    setOpenCreateSubjectModal
+    OpenCreateCourseModal,
+    setOpenCreateCourseModal
   };
 }
