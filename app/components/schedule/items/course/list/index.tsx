@@ -1,9 +1,11 @@
 import React from "react";
 import { hooks } from "./hook";
 import CreateSubjectModal from "../modal/create";
+import { useCourseStore } from "@/app/contexts/course.store";
 
 export function CourseList() {
   const courseHooks = hooks();
+  const courseStore = useCourseStore();
 
   return (
     <div className="">
@@ -90,7 +92,7 @@ export function CourseList() {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {courseHooks.courses.map((course) => {
             const isActive = course.startsAt && course.endsAt &&
               new Date(course.startsAt) <= new Date() &&
@@ -100,7 +102,8 @@ export function CourseList() {
             return (
               <div
                 key={course.id}
-                className="rounded-lg shadow-sm border-[1px] border-gray-200"
+                onClick={() => courseStore.setSelectedCourse(course)}
+                className="rounded-lg select-none hover:cursor-pointer hover:scale-[1.02] transition duration-150 shadow-sm border-[1px] border-gray-200"
               >
                 {/* Course Header */}
                 <div className="relative p-3 border-b border-gray-200 pb-2 mb-2">

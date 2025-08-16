@@ -17,3 +17,19 @@ export async function getCoursesAction(includeGroups: boolean = false, includeSu
 export async function uploadCoursesAction(data: any) {
   return await managementServices.createCourse(data);
 }
+
+export async function getGroupsAction() {
+  return await managementServices.getGroups();
+}
+
+export async function uploadGroupAction(data: any) {
+  return await managementServices.createGroup(data);
+}
+
+export async function getSessionsAction() {
+  return await managementServices.getSessions();
+}
+
+export async function uploadSessionAction(data: any) {
+  return await managementServices.createSession(data);
+}

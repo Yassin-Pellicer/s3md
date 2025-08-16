@@ -10,7 +10,7 @@ export type Course = {
   endsAt?: Date;
   inscriptionStart?: Date;
   inscriptionEnd?: Date;
-  tutorId?: string;
+  tutorId?: string | null;
   price?: number;
   duration?: number;
   subjects?: Subject[];

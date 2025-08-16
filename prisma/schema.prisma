@@ -62,7 +62,6 @@ model Session {
   id          String   @id @default(cuid())
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now())
-  tutorId     String
   title       String
   description String
   price       Int

@@ -1,7 +1,8 @@
 import prisma from '../prisma/client';
+import { Course } from '../types/Course';
 
 export class CourseRepository {
-  getAll(includeGroups: boolean = false, includeSubjects: boolean = false) {
+  async getAll(includeGroups: boolean = false, includeSubjects: boolean = false): Promise<Course[]> {
     return prisma.course.findMany({
       include: {
         groups: includeGroups,
