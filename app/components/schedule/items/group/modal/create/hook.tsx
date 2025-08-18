@@ -1,19 +1,29 @@
-import { useState } from "react";
-import { Subject } from "@/app/types/Subject";
-import { uploadSubjectAction } from "@/app/server/management.action";
+import { useEffect, useState } from "react";
+import { uploadGroupAction } from "@/app/server/management.action";
+import { Group } from "@/app/types/Group";
+import { useCourseStore } from "@/app/contexts/course.store";
 
 export function hooks() {
 
-  const [formData, setFormData] = useState<Subject>({
-    topic: "",
+  const courseStore = useCourseStore();
+  const [formData, setFormData] = useState<Group>({
     title: "",
     description: "",
-    color: "#000000",
-    materialRoute: "",
+    courseId: courseStore.selectedCourse?.id,
+    capacity: 0,
   });
+  
+  useEffect(() => {
+    if (courseStore.selectedCourse?.id) {
+      setFormData(prev => ({ ...prev, courseId: courseStore.selectedCourse!.id }));
+    }
+  }, [courseStore.selectedCourse]);
 
   const uploadContent = async () => {
-    await uploadSubjectAction(formData);
+    if (!formData.courseId) {
+      throw new Error("No course selected. Please select a course before creating a group.");
+    }
+    await uploadGroupAction(formData);
   };
 
   const handleConfirm = () => {

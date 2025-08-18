@@ -2,6 +2,7 @@ import { Subject } from "@prisma/client";
 import subjectRepository from "../repositories/subject.repository";
 import courseRepository from "../repositories/course.repository";
 import sessionRepository from "../repositories/session.repository";
+import groupRepository from "../repositories/group.repository";
 
 export class managementService {
 
@@ -22,11 +23,11 @@ export class managementService {
   }
 
   async getGroups() {
-    return await courseRepository.getAll();
+    return await groupRepository.getAll();
   }
 
   async createGroup(data: any) {
-    return await courseRepository.create(data);
+    return await groupRepository.create(data);
   }
 
   async getSessions() {

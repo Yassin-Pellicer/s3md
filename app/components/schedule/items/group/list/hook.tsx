@@ -1,22 +1,23 @@
-import { getSubjectsAction } from "@/app/server/management.action";
-import { Subject } from "@/app/types/Subject";
+import { getGroupsAction } from "@/app/server/management.action";
+import { Group } from "@/app/types/Group";
 import { useEffect, useState } from "react";
 
 export function hooks() {
-  const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [openCreateSubjectModal, setOpenCreateSubjectModal] = useState(false);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [openCreateGroupModal, setOpenCreateGroupModal] = useState(false);
 
   useEffect(() => {
     fetchContent();
   }, []);
 
   const fetchContent = async () => {
-    setSubjects(await getSubjectsAction());
+    setGroups(await getGroupsAction());
   };
 
   return {
-    subjects,
-    openCreateSubjectModal,
-    setOpenCreateSubjectModal
+    groups,
+    setGroups,
+    openCreateGroupModal,
+    setOpenCreateGroupModal
   };
 }

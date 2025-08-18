@@ -8,18 +8,17 @@ import {
   Button,
   Stack,
 } from "@mui/material";
-import { Subject } from "@/app/types/Subject";
 import { hooks } from "./hook";
 
-const CreateSubjectModal = ({
+const CreateGroupModal = ({
   open,
   setOpen,
 }: {
   open: boolean;
   setOpen: (open: boolean) => void;
 }) => {
-  const subjectHooks = hooks();
-
+  const groupHooks = hooks();
+  
   return (
     <Dialog
       open={open}
@@ -42,73 +41,58 @@ const CreateSubjectModal = ({
           p: 1,
         }}
       >
-        <span className="material-symbols-outlined">folder</span>
+        <span className="material-symbols-outlined">groups</span>
         <span className="text-xl font-bold tracking-tight">
-          Create New Subject
+          Create New Group
         </span>
       </DialogTitle>
       <DialogContent sx={{ fontSize: "0.875rem", p: 1.5 }}>
         <p className="mb-3 mt-1">
-          Please fill in the subject details below.
+          Please fill in the group details below.
         </p>
         <Stack spacing={2}>
           <TextField
             label="Title"
             name="title"
-            value={subjectHooks.formData.title}
+            value={groupHooks.formData.title}
             onChange={(e) =>
-              subjectHooks.setFormData(prev => ({
+              groupHooks.setFormData(prev => ({
                 ...prev,
                 title: e.target.value,
               }))
             }
             fullWidth
+            required
           />
           <TextField
             label="Description"
             name="description"
-            value={subjectHooks.formData.description}
+            value={groupHooks.formData.description}
             onChange={(e) =>
-              subjectHooks.setFormData(prev => ({
+              groupHooks.setFormData(prev => ({
                 ...prev,
                 description: e.target.value,
               }))
             }
             fullWidth
+            multiline
+            rows={3}
+            required
           />
           <TextField
-            type="color"
-            value={subjectHooks.formData.color}
+            label="Capacity"
+            name="capacity"
+            type="number"
+            value={groupHooks.formData.capacity}
             onChange={(e) =>
-              subjectHooks.setFormData(prev => ({
+              groupHooks.setFormData(prev => ({
                 ...prev,
-                color: e.target.value,
-              }))
-            }
-          />
-          <TextField
-            label="Topic"
-            name="topic"
-            value={subjectHooks.formData.topic}
-            onChange={(e) =>
-              subjectHooks.setFormData(prev => ({
-                ...prev,
-                topic: e.target.value,
+                capacity: parseInt(e.target.value) || 0,
               }))
             }
             fullWidth
-          />
-          <TextField
-            label="Material Route"
-            name="materialRoute"
-            value={subjectHooks.formData.materialRoute}
-            onChange={(e) =>
-              subjectHooks.setFormData(prev => ({
-                ...prev,
-                materialRoute: e.target.value,
-              }))
-            }
-            fullWidth
+            inputProps={{ min: 1 }}
+            required
           />
         </Stack>
       </DialogContent>
@@ -120,7 +104,7 @@ const CreateSubjectModal = ({
           variant="contained"
           color="primary"
           onClick={() => {
-            subjectHooks.uploadContent();
+            groupHooks.uploadContent();
             setOpen(false);
           }}
         >
@@ -131,4 +115,4 @@ const CreateSubjectModal = ({
   );
 };
 
-export default CreateSubjectModal;
+export default CreateGroupModal;

@@ -1,5 +1,6 @@
 import { useCourseStore } from "@/app/contexts/course.store";
 import { SubjectList } from "../../subject/list";
+import { GroupList } from "../../group/list";
 
 export function CourseDetails() {
   const courseStore = useCourseStore();
@@ -128,7 +129,7 @@ export function CourseDetails() {
       </div>
 
       <div className="px-6 my-4">
-        <SubjectList></SubjectList>
+        <GroupList></GroupList>
       </div>
 
     </div>

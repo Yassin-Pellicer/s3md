@@ -7,5 +7,6 @@ export type Group = {
   description?: string;
   courseId?: string;
   course?: Course;
+  capacity?: number;
   sessions?: Session[];
 };

@@ -10,6 +10,7 @@ export class GroupRepository {
   }
 
   create(data: any) {
+    console.log(data);
     return prisma.group.create({ data });
   }
 

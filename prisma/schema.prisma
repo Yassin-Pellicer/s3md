@@ -54,6 +54,7 @@ model Group {
   title       String
   description String
   courseId    String
+  capacity    Int
   course      Course    @relation(fields: [courseId], references: [id])
   sessions    Session[] // one group → many sessions
 }
