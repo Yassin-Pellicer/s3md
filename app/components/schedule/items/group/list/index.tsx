@@ -2,6 +2,7 @@ import React from "react";
 import { hooks } from "./hook";
 import CreateSubjectModal from "../modal/create";
 import CreateGroupModal from "../modal/create";
+import { SessionList } from "../../session/list";
 
 export function GroupList() {
   const groupHooks = hooks();
@@ -59,6 +60,10 @@ export function GroupList() {
           </div>
         ))}
       </div>
+
+<div className="mt-4">
+      <SessionList></SessionList>
+</div>
       <CreateGroupModal
         open={groupHooks.openCreateGroupModal}
         setOpen={groupHooks.setOpenCreateGroupModal}
