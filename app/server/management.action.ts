@@ -6,6 +6,10 @@ export async function getSubjectsAction() {
   return await managementServices.getSubjects();
 }
 
+export async function getSubjectsFromCourse(id: string) {
+  return await managementServices.getSubjectsFromCourse(id);
+}
+
 export async function uploadSubjectAction(data: any) {
   return await managementServices.createSubject(data);
 }
@@ -20,6 +24,10 @@ export async function uploadCoursesAction(data: any) {
 
 export async function getGroupsAction() {
   return await managementServices.getGroups();
+}
+
+export async function getGroupByCourseAction(id: string) {
+  return await managementServices.getGroupByCourse(id);
 }
 
 export async function uploadGroupAction(data: any) {

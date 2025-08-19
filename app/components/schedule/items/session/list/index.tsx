@@ -4,11 +4,10 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
+import { Group } from "@/app/types/Group";
 
 
-export function SessionList() {
-  const sessionHooks = hooks();
-
+export function SessionList({ group }: { group?: Group | null }) {
   return (
     <div className="">
       <div className="4">
@@ -18,7 +17,7 @@ export function SessionList() {
           selectable={true}
           editable={true}
           height="auto"
-          events={sessionHooks.sessions}
+          events={group?.sessions}
           headerToolbar={{
             left: "prev,next today",
             center: "title",

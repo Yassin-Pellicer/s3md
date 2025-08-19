@@ -1,8 +1,9 @@
 import React from "react";
 import { hooks } from "./hook";
-import CreateSubjectModal from "../modal/create";
+import CreateSessionModal from "../modal/create";
+import { Group } from "@/app/types/Group";
 
-export function SessionList() {
+export function SessionDetails({ group }: { group?: Group | null }) {
   const sessionHooks = hooks();
 
   return (
@@ -23,9 +24,10 @@ export function SessionList() {
         </button>
       </div>
 
-      <CreateSubjectModal
+      <CreateSessionModal
         open={sessionHooks.openCreateSessionModal}
         setOpen={sessionHooks.setOpenCreateSessionModal}
+        group={group}
       />
     </div>
   );

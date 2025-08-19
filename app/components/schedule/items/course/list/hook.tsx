@@ -12,7 +12,7 @@ export function hooks() {
   }, []);
 
   const fetchContent = async () => {
-    setCourses(await getCoursesAction(false, false));
+    setCourses(await getCoursesAction(true, true));
   }
 
   return {

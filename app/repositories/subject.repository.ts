@@ -1,3 +1,4 @@
+import { Subject } from '@prisma/client';
 import prisma from '../prisma/client';
 
 export class SubjectRepository {
@@ -19,6 +20,22 @@ export class SubjectRepository {
 
   delete(id: string) {
     return prisma.subject.delete({ where: { id } });
+  }
+
+  getSubjectsFromCourse(id: string): Promise<Subject[]> {
+    return prisma.subject.findMany({
+      where: {
+        courses: {
+          some: {
+            id,
+          },
+        },
+      },
+      include: {
+        tutor: true,
+        sessions: true,
+      },
+    });
   }
 }
 

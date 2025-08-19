@@ -1,23 +1,20 @@
-import { getGroupsAction } from "@/app/server/management.action";
+import { useCourseStore } from "@/app/contexts/course.store";
+import { getGroupByCourseAction, getGroupsAction } from "@/app/server/management.action";
 import { Group } from "@/app/types/Group";
 import { useEffect, useState } from "react";
 
 export function hooks() {
-  const [groups, setGroups] = useState<Group[]>([]);
   const [openCreateGroupModal, setOpenCreateGroupModal] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState<Group | undefined>(undefined);
 
   useEffect(() => {
-    fetchContent();
-  }, []);
-
-  const fetchContent = async () => {
-    setGroups(await getGroupsAction());
-  };
+   setSelectedGroup(undefined); 
+  }, [useCourseStore.getState().selectedCourse]);
 
   return {
-    groups,
-    setGroups,
     openCreateGroupModal,
+    selectedGroup,
+    setSelectedGroup,
     setOpenCreateGroupModal
   };
 }

@@ -3,9 +3,12 @@ import { hooks } from "./hook";
 import CreateSubjectModal from "../modal/create";
 import CreateGroupModal from "../modal/create";
 import { SessionList } from "../../session/list";
+import { SessionDetails } from "../../session/details";
+import { useCourseStore } from "@/app/contexts/course.store";
 
 export function GroupList() {
   const groupHooks = hooks();
+  const courseStore = useCourseStore();
 
   return (
     <div>
@@ -25,10 +28,11 @@ export function GroupList() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {groupHooks.groups.map((group) => (
+        {courseStore.selectedCourse?.groups!.map(group => (
           <div
             key={group.id}
-            className="rounded-lg shadow-sm border-[1px] border-gray-200"
+            className={`rounded-lg shadow-sm border-[1px] ${groupHooks.selectedGroup?.id === group.id ? "border-green-500" : "border-gray-200"}`}
+            onClick={() => groupHooks.setSelectedGroup(group)}
           >
             <div className="relative p-3 border-b-[1px] border-gray-200 pb-3 mb-2">
               <div className="flex justify-between items-start">
@@ -61,9 +65,10 @@ export function GroupList() {
         ))}
       </div>
 
-<div className="mt-4">
-      <SessionList></SessionList>
-</div>
+      <div className="mt-4">
+        <SessionDetails group={groupHooks.selectedGroup}></SessionDetails>
+        <SessionList group={groupHooks.selectedGroup} ></SessionList>
+      </div>
       <CreateGroupModal
         open={groupHooks.openCreateGroupModal}
         setOpen={groupHooks.setOpenCreateGroupModal}

@@ -2,10 +2,12 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import { 
   getSubjectsAction, 
   getGroupsAction, 
-  uploadSessionAction 
+  uploadSessionAction, 
+  getSubjectsFromCourse
 } from "@/app/server/management.action";
 import { Subject } from "@/app/types/Subject";
 import { Group } from "@/app/types/Group";
+import { useCourseStore } from "@/app/contexts/course.store";
 
 interface SessionFormData {
   title: string;
@@ -41,28 +43,37 @@ const initialFormData: SessionFormData = {
   subjectId: "",
 };
 
-export function useSessionForm() {
+export function useSessionForm({ group }: { group?: Group | null }) {
   const [formData, setFormData] = useState<SessionFormData>(initialFormData);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [subjectList, setSubjectList] = useState<Subject[]>([]);
-  const [groupList, setGroupList] = useState<Group[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const courseStore = useCourseStore();
 
-  // Initialize data on mount
+  // Initialize data on mount or when group changes
   useEffect(() => {
     initializeData();
-  }, []);
+    console.log("group changed");
+    setFormData(prev => ({ ...prev, groupId: group?.id || "" }));
+  }, [group, courseStore.selectedCourse]);
+
+  useEffect(() => {
+    
+  })
 
   const initializeData = async () => {
     setIsLoading(true);
     try {
-      const [subjects, groups] = await Promise.all([
-        getSubjectsAction(),
-        getGroupsAction(),
-      ]);
+      // Load subjects from selectedCourse
+      const subjects = courseStore.selectedCourse?.subjects || [];
       setSubjectList(subjects);
-      setGroupList(groups);
+
+      // If group is provided, set it automatically in form
+      setFormData(prev => ({
+        ...prev,
+        groupId: group?.id || "",
+      }));
     } catch (error) {
       console.error("Failed to load initial data:", error);
       setErrors({ submit: "Failed to load subjects and groups" });
@@ -72,16 +83,17 @@ export function useSessionForm() {
   };
 
   const resetForm = useCallback(() => {
-    setFormData(initialFormData);
+    setFormData({
+      ...initialFormData,
+      groupId: group?.id || "", // keep group auto-set
+    });
     setErrors({});
     setIsSubmitting(false);
-  }, []);
+  }, [group]);
 
   const updateFormField = useCallback(
     <K extends keyof SessionFormData>(field: K, value: SessionFormData[K]) => {
       setFormData(prev => ({ ...prev, [field]: value }));
-      
-      // Clear field error when user starts typing
       if (errors[field]) {
         setErrors(prev => ({ ...prev, [field]: undefined }));
       }
@@ -92,7 +104,6 @@ export function useSessionForm() {
   const validateForm = useCallback((): boolean => {
     const newErrors: FormErrors = {};
 
-    // Required field validations
     if (!formData.title.trim()) {
       newErrors.title = "Title is required";
     } else if (formData.title.length > 100) {
@@ -119,7 +130,6 @@ export function useSessionForm() {
       newErrors.groupId = "Group is required";
     }
 
-    // Numeric validations
     if (formData.price < 0) {
       newErrors.price = "Price cannot be negative";
     } else if (formData.price > 10000) {
@@ -143,9 +153,8 @@ export function useSessionForm() {
   }, [formData]);
 
   const submitForm = useCallback(async (): Promise<void> => {
-    if (!validateForm()) {
-      throw new Error("Please fix the form errors before submitting");
-    }
+
+    console.log("submitForm", formData);
 
     setIsSubmitting(true);
     setErrors({});
@@ -164,16 +173,12 @@ export function useSessionForm() {
     }
   }, [formData, validateForm]);
 
-  // Computed values
   const selectedSubject = useMemo(() => 
     subjectList.find(s => s.id === formData.subjectId),
     [subjectList, formData.subjectId]
   );
 
-  const selectedGroup = useMemo(() => 
-    groupList.find(g => g.id === formData.groupId),
-    [groupList, formData.groupId]
-  );
+  const selectedGroup = useMemo(() => group, [group]);
 
   const minDateTime = useMemo(() => {
     const now = new Date();
@@ -191,70 +196,26 @@ export function useSessionForm() {
     description: `${formData.description.length}/500 characters`,
   }), [formData.title.length, formData.description.length]);
 
-  const isFormReady = useMemo(() => 
-    !isLoading && subjectList.length > 0 && groupList.length > 0,
-    [isLoading, subjectList.length, groupList.length]
-  );
+  const isFormReady = useMemo(() => {
+    return subjectList.length > 0 && !!formData.groupId;
+  }, [subjectList, formData.groupId]);
 
   return {
-    // Form data
     formData,
     errors,
     isSubmitting,
     isLoading,
-    
-    // Lists
     subjectList,
-    groupList,
-    
-    // Computed values
+    group,
     selectedSubject,
     selectedGroup,
     minDateTime,
     durationDisplay,
     characterCounts,
     isFormReady,
-    
-    // Actions
     updateFormField,
     submitForm,
     resetForm,
     validateForm,
-  };
-}
-
-// Optional: Separate hook for managing modal state
-export function useSessionModal() {
-  const [isOpen, setIsOpen] = useState(false);
-  const sessionForm = useSessionForm();
-
-  const openModal = useCallback(() => {
-    setIsOpen(true);
-  }, []);
-
-  const closeModal = useCallback(() => {
-    if (!sessionForm.isSubmitting) {
-      setIsOpen(false);
-      sessionForm.resetForm();
-    }
-  }, [sessionForm.isSubmitting, sessionForm.resetForm]);
-
-  const handleSubmit = useCallback(async () => {
-    try {
-      await sessionForm.submitForm();
-      closeModal();
-      // You can add success callback here if needed
-    } catch (error) {
-      // Error is already handled in the form hook
-      console.error("Session creation failed:", error);
-    }
-  }, [sessionForm.submitForm, closeModal]);
-
-  return {
-    isOpen,
-    openModal,
-    closeModal,
-    handleSubmit,
-    ...sessionForm,
   };
 }

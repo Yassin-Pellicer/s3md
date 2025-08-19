@@ -9,6 +9,9 @@ export class managementService {
   async getSubjects(): Promise<Subject[]> {
     return await subjectRepository.getAll();
   }
+  async getSubjectsFromCourse(id: string): Promise<Subject[]> {
+    return await subjectRepository.getSubjectsFromCourse(id);
+  }
 
   async createSubject(data: any) {
     return await subjectRepository.create(data);
@@ -24,6 +27,10 @@ export class managementService {
 
   async getGroups() {
     return await groupRepository.getAll();
+  }
+
+  async getGroupByCourse(id: string) {
+    return await groupRepository.getGroupByCourse(id);
   }
 
   async createGroup(data: any) {

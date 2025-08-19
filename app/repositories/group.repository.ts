@@ -21,6 +21,14 @@ export class GroupRepository {
   delete(id: string) {
     return prisma.group.delete({ where: { id } });
   }
+
+  getGroupByCourse(id: string) {
+    return prisma.group.findMany({
+      where: {
+        courseId: id,
+      },
+    });
+  }
 }
 
 export default new GroupRepository();

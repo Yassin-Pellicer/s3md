@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, FormEvent } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -29,12 +29,14 @@ interface CreateSessionModalProps {
   open: boolean;
   setOpen: (open: boolean) => void;
   onSuccess?: () => void;
+  group?: Group | null;
 }
 
 const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
   open,
   setOpen,
   onSuccess,
+  group,
 }) => {
   const {
     // Form data
@@ -42,11 +44,10 @@ const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
     errors,
     isSubmitting,
     isLoading,
-    
+
     // Lists
     subjectList,
-    groupList,
-    
+
     // Computed values
     selectedSubject,
     selectedGroup,
@@ -54,29 +55,27 @@ const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
     durationDisplay,
     characterCounts,
     isFormReady,
-    
+
     // Actions
     updateFormField,
     submitForm,
     resetForm,
-  } = useSessionForm();
+  } = useSessionForm({ group });
 
   // Reset form when modal opens/closes
-  React.useEffect(() => {
+  useEffect(() => {
     if (!open) {
       resetForm();
     }
   }, [open, resetForm]);
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    
     try {
       await submitForm();
       onSuccess?.();
       setOpen(false);
-    } catch (error) {
-      // Error handling is done in the hook
+    } catch {
     }
   };
 
@@ -150,19 +149,13 @@ const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
           </Alert>
         )}
 
-        {!isFormReady && (
-          <Alert severity="warning" sx={{ mb: 3 }}>
-            No subjects or groups available. Please add them first.
-          </Alert>
-        )}
-
         <Stack spacing={3}>
           {/* Basic Information */}
           <Box>
             <Typography variant="subtitle2" color="primary" gutterBottom>
               Session Details
             </Typography>
-            
+
             <Stack spacing={2.5}>
               <TextField
                 label="Session Title"
@@ -220,7 +213,7 @@ const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
             <Typography variant="subtitle2" color="primary" gutterBottom>
               Academic Details
             </Typography>
-            
+
             <Stack spacing={2.5}>
               <TextField
                 select
@@ -231,7 +224,6 @@ const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
                 helperText={errors.subjectId || (selectedSubject && `Selected: ${selectedSubject.title}`)}
                 required
                 fullWidth
-                disabled={subjectList.length === 0}
               >
                 <MenuItem value="">
                   <em>Select a subject</em>
@@ -239,27 +231,6 @@ const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
                 {subjectList.map((subject: Subject) => (
                   <MenuItem key={subject.id} value={subject.id}>
                     {subject.title}
-                  </MenuItem>
-                ))}
-              </TextField>
-
-              <TextField
-                select
-                label="Group"
-                value={formData.groupId}
-                onChange={(e) => updateFormField('groupId', e.target.value)}
-                error={!!errors.groupId}
-                helperText={errors.groupId || (selectedGroup && `Selected: ${selectedGroup.title}`)}
-                required
-                fullWidth
-                disabled={groupList.length === 0}
-              >
-                <MenuItem value="">
-                  <em>Select a group</em>
-                </MenuItem>
-                {groupList.map((group: Group) => (
-                  <MenuItem key={group.id} value={group.id}>
-                    {group.title}
                   </MenuItem>
                 ))}
               </TextField>
@@ -271,7 +242,7 @@ const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
             <Typography variant="subtitle2" color="primary" gutterBottom>
               Session Configuration
             </Typography>
-            
+
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
               <TextField
                 label="Price per Student"
@@ -327,8 +298,8 @@ const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
       </DialogContent>
 
       <DialogActions sx={{ px: 3, py: 2, gap: 1 }}>
-        <Button 
-          onClick={handleClose} 
+        <Button
+          onClick={handleClose}
           disabled={isSubmitting}
           color="inherit"
           size="large"
@@ -339,8 +310,8 @@ const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
           type="submit"
           variant="contained"
           color="primary"
-          disabled={isSubmitting || !isFormReady}
           size="large"
+          onClick={submitForm}
           startIcon={isSubmitting ? <CircularProgress size={18} /> : null}
         >
           {isSubmitting ? "Creating Session..." : "Create Session"}
