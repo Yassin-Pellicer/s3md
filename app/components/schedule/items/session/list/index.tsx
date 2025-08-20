@@ -25,7 +25,7 @@ export function SessionList({ group }: { group?: Group | null }) {
   };
 
   return (
-    <div className="rounded-xl shadow-md p-2 bg-white">
+    <div className="">
       <FullCalendar
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
         initialView="timeGridWeek"

@@ -1,56 +1,52 @@
 import { useCourseStore } from "@/app/contexts/course.store";
 import { SubjectList } from "../../subject/list";
 import { GroupList } from "../../group/list";
+import { hooks } from "./hook";
 
 export function CourseDetails() {
   const courseStore = useCourseStore();
   const course = courseStore.selectedCourse;
+  const detailsHook = hooks();
 
   return (
     <div className="flex flex-col">
       <div
         key={course?.id}
-        className="shadow-sm"
+        className="shadow-sm top-0 bg-white z-50 sticky"
       >
         {/* Course Header */}
-        <div className="relative p-3 border-b border-gray-200 pb-2 mb-2">
-          <div className="flex justify-between items-start mb-4">
+        <div className="p-3 border-b top-0 sticky border-gray-200 pb-2 mb-2">
+          <div className="flex justify-between items-start">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
-                <h2 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-300">
+                <p className="material-symbols-outlined">school</p>
+                <h2 className="text-2xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-300">
                   {course?.title}
                 </h2>
               </div>
+            </div>
+            <div className="flex flex-row items-center gap-4">
               {course?.price !== undefined && (
                 <div className="flex items-center gap-2">
+                  <p className="material-symbols-outlined">payments</p>
                   <span className="text-2xl font-bold text-green-600">
-                    ${course?.price}
+                    {course?.price} €
                   </span>
                 </div>
               )}
+              <button
+                title="Add new post"
+                className="bg-transparent border-[1px] border-black rounded-full w-6 h-6 flex items-center justify-center hover:bg-gray-200 p-1 hover:cursor-pointer"
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>more_vert</span>
+              </button>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-orange-500 text-lg">
-                subject
-              </span>
-              <div className="text-right">
-                <p className="text-xs text-gray-500">Subjects</p>
-                <p className="font-semibold text-gray-800 text-sm">
-                  {course?.subjects?.length || 0}
-                </p>
-              </div>
-            </div>
-
           </div>
-
-          <p className="text-gray-600 text-sm leading-relaxed line-clamp-3">
+          <p className="text-gray-600 text-md line-clamp-3">
             {course?.description}
           </p>
         </div>
-
-        {/* Tutor & Subjects */}
         <div className="px-3 pb-2 items-center flex flex-row justify-between align-center ">
-
           <div className="grid grid-cols-2 gap-2 text-sm">
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
@@ -67,7 +63,6 @@ export function CourseDetails() {
                 </p>
               </div>
             </div>
-
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
                 event_available
@@ -84,8 +79,6 @@ export function CourseDetails() {
               </div>
             </div>
           </div>
-
-          {/* Subject Tags */}
           {course?.subjects && course?.subjects.length > 0 && (
             <div className="flex flex-row flex-wrap gap-2">
               <p className="material-symbols-outlined">subject</p>
@@ -107,12 +100,30 @@ export function CourseDetails() {
             </div>
           )}
         </div>
+        <div className="flex flex-row overflow-x-auto pt-2">
+          {[
+            ["Schedule", "event"],
+            ["Groups", "groups"],
+            ["Subjects", "subject"],
+            ["Students", "people"],
+            ["Requests", "article"],
+          ].map(([name, icon], index) => (
+            <button
+              key={index}
+              className={`w-full px-3 text-sm text-center hover:bg-gray-100 transition duration-75 ease-in-out 
+              hover:cursor-pointer py-2 items-center flex flex-row border-r border-r-gray-200 gap-1 justify-center ${detailsHook.selectedOption === name ? "border-b-3 border-blue-500" : ""}`}
+              onClick={() => detailsHook.setSelectedOption(name)}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>{icon}</span>
+              <span className="ml-1">{name}</span>
+            </button>
+          ))}
+        </div>
       </div>
-
-      <div className="px-6 my-4">
-        <GroupList></GroupList>
+      <div className="px-4 my-4">
+        {detailsHook.selectedOption === "Groups" && <GroupList></GroupList>}
+        {detailsHook.selectedOption === "Subjects" && <SubjectList subjects={course?.subjects}></SubjectList>}
       </div>
-
     </div>
   );
 }

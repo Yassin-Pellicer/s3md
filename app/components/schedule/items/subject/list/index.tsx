@@ -1,10 +1,10 @@
 import React from "react";
 import { hooks } from "./hook";
 import CreateSubjectModal from "../modal/create";
+import { Subject } from "@/app/types/Subject";
 
-export function SubjectList() {
-  const subjectHooks = hooks();
-
+export function SubjectList({ subjects: subjectsProp = [] }: { subjects?: Subject[] } = {}) {
+  const subjectHooks = hooks(subjectsProp);
   return (
     <div>
       <div className="flex flex-row justify-between items-start sm:items-center mb-4 gap-4">
