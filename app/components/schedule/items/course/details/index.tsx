@@ -48,84 +48,65 @@ export function CourseDetails() {
           </p>
         </div>
 
-        {/* Course Details */}
-
-
         {/* Tutor & Subjects */}
-        <div className="px-3 pb-4 flex justify-between align-center items-center ">
-          <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-green-500 text-lg">
-              person
-            </span>
-            <div>
-              <p className="text-xs text-gray-500">Tutor</p>
-              {course?.tutor ? (
-                <p className="font-semibold text-gray-800 text-sm">
-                  {course?.tutor.firstName} {course?.tutor.lastName}
+        <div className="px-3 pb-2 items-center flex flex-row justify-between align-center ">
+
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
+                calendar_today
+              </span>
+              <div>
+                <p className="text-gray-500">Starts</p>
+                <p className="font-semibold text-xs text-gray-800">
+                  {course?.startsAt ? new Date(course?.startsAt).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                  }) : "TBD"}
                 </p>
-              ) : (
-                <p className="text-gray-400 italic text-sm">Not assigned</p>
-              )}
-            </div>
-          </div>
-
-          <div className="">
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
-                  calendar_today
-                </span>
-                <div>
-                  <p className="text-gray-500">Starts</p>
-                  <p className="font-semibold text-xs text-gray-800">
-                    {course?.startsAt ? new Date(course?.startsAt).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric'
-                    }) : "TBD"}
-                  </p>
-                </div>
               </div>
+            </div>
 
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
-                  event_available
-                </span>
-                <div>
-                  <p className="text-gray-500">Ends</p>
-                  <p className="font-semibold text-xs text-gray-800">
-                    {course?.endsAt ? new Date(course?.endsAt).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric'
-                    }) : "TBD"}
-                  </p>
-                </div>
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
+                event_available
+              </span>
+              <div>
+                <p className="text-gray-500">Ends</p>
+                <p className="font-semibold text-xs text-gray-800">
+                  {course?.endsAt ? new Date(course?.endsAt).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                  }) : "TBD"}
+                </p>
               </div>
             </div>
           </div>
+
+          {/* Subject Tags */}
+          {course?.subjects && course?.subjects.length > 0 && (
+            <div className="flex flex-row flex-wrap gap-2">
+              <p className="material-symbols-outlined">subject</p>
+              <div className="flex flex-wrap gap-2">
+                {course?.subjects.slice(0, 3).map((subject, index) => (
+                  <span
+                    key={index}
+                    className="px-2 py-1 text-xs font-medium text-black bg-blue-50 rounded-lg border border-blue-200"
+                  >
+                    {subject.title || `Subject ${index + 1}`}
+                  </span>
+                ))}
+                {course?.subjects.length > 3 && (
+                  <span className="px-2 py-1 text-xs font-medium text-gray-500 bg-gray-50 rounded-lg border border-gray-200">
+                    +{course?.subjects.length - 3} more
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
         </div>
-
-        {/* Subject Tags */}
-        {course?.subjects && course?.subjects.length > 0 && (
-          <div className="">
-            <div className="flex flex-wrap gap-2">
-              {course?.subjects.slice(0, 3).map((subject, index) => (
-                <span
-                  key={index}
-                  className="px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 rounded-lg border border-blue-200"
-                >
-                  {subject.title || `Subject ${index + 1}`}
-                </span>
-              ))}
-              {course?.subjects.length > 3 && (
-                <span className="px-2 py-1 text-xs font-medium text-gray-500 bg-gray-50 rounded-lg border border-gray-200">
-                  +{course?.subjects.length - 3} more
-                </span>
-              )}
-            </div>
-          </div>
-        )}
       </div>
 
       <div className="px-6 my-4">
