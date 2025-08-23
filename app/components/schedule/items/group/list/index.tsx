@@ -1,9 +1,10 @@
 import React from "react";
 import { hooks } from "./hook";
 import CreateGroupModal from "../modal/create";
-import { SessionList } from "../../session/list";
+import { SessionList } from "../../session/calendar";
 import { SessionDetails } from "../../session/details";
 import { useCourseStore } from "@/app/contexts/course.store";
+import { GroupDetails } from "../details";
 
 export function GroupList() {
   const groupHooks = hooks();
@@ -48,13 +49,6 @@ export function GroupList() {
                     <span className="text-xs text-gray-500">Capacity</span>
                   </div>
                   <p className="text-lg font-bold text-gray-900">{group.capacity}</p>
-                  <button
-                    title="Add new post"
-                    className="bg-transparent border-[1px] border-black rounded-full w-6 h-6 flex items-center justify-center hover:bg-gray-200 p-1 hover:cursor-pointer"
-                  onClick={(e) => {e.stopPropagation(); groupHooks.setOpenCreateGroupModal(true)}}
-                  >
-                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>more_vert</span>
-                  </button>
                 </div>
               </div>
               <p className="text-gray-600 text-sm leading-relaxed line-clamp-3 border-b border-gray-200 pb-2 mb-2">
@@ -68,8 +62,7 @@ export function GroupList() {
         ))}
       </div>
       <div className="mt-4">
-        <SessionDetails group={groupHooks.selectedGroup}></SessionDetails>
-        <SessionList group={groupHooks.selectedGroup} ></SessionList>
+        <GroupDetails group={groupHooks.selectedGroup}></GroupDetails>
       </div>
       <CreateGroupModal
         open={groupHooks.openCreateGroupModal}

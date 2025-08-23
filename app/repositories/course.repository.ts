@@ -11,7 +11,26 @@ export class CourseRepository {
         groups: includeGroups
           ? {
               include: {
-                sessions: true,
+                sessions: {
+                  include: {
+                    subject: {
+                      select: {
+                        id: true,
+                        tutorId: true,
+                        topic: true,
+                        description: true,
+                        color: true,
+                        tutor: {
+                          select: {
+                            id: true,
+                            firstName: true,
+                            lastName: true,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
               },
             }
           : undefined,

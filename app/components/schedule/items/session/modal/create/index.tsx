@@ -1,4 +1,4 @@
-import React, { useEffect, FormEvent } from "react";
+import React, { useEffect, FormEvent, useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -15,100 +15,57 @@ import {
   Alert,
   CircularProgress,
   Skeleton,
+  FormControlLabel,
+  Switch,
+  Chip,
+  Card,
+  CardContent,
+  Collapse,
+  FormLabel,
+  FormGroup,
+  Checkbox,
 } from "@mui/material";
-import {
-  Close as CloseIcon,
-  School as SchoolIcon,
-  CalendarToday as CalendarIcon,
-} from "@mui/icons-material";
+
 import { useSessionForm } from "./hook";
 import { Subject } from "@/app/types/Subject";
 import { Group } from "@/app/types/Group";
+import { useCourseStore } from "@/app/contexts/course.store";
 
-interface CreateSessionModalProps {
-  open: boolean;
-  setOpen: (open: boolean) => void;
-  onSuccess?: () => void;
-  group?: Group | null;
-}
-
-const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
+const CreateSessionModal = ({
   open,
   setOpen,
   onSuccess,
   group,
+  initialDateTime,
+  editingSession,
+}: {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  onSuccess?: () => void;
+  group?: Group | null;
+  initialDateTime?: Date | null;
+  editingSession?: any;
 }) => {
-  const {
-    // Form data
-    formData,
-    errors,
-    isSubmitting,
-    isLoading,
+  const hooks = useSessionForm({ group, initialDateTime, editingSession });
+  const courseStore = useCourseStore();
+    const [multiple, setMultiple] = useState(false);
+  const [selectedDays, setSelectedDays] = useState<string[]>([]);
+const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-    // Lists
-    subjectList,
-
-    // Computed values
-    selectedSubject,
-    selectedGroup,
-    minDateTime,
-    durationDisplay,
-    characterCounts,
-    isFormReady,
-
-    // Actions
-    updateFormField,
-    submitForm,
-    resetForm,
-  } = useSessionForm({ group });
-
-  // Reset form when modal opens/closes
-  useEffect(() => {
-    if (!open) {
-      resetForm();
-    }
-  }, [open, resetForm]);
-
-  const handleSubmit = async (event: FormEvent) => {
-    event.preventDefault();
-    try {
-      await submitForm();
-      onSuccess?.();
-      setOpen(false);
-    } catch {
-    }
-  };
-
-  const handleClose = () => {
-    if (!isSubmitting) {
-      setOpen(false);
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <Dialog open={open} maxWidth="md" fullWidth>
-        <DialogContent>
-          <Stack spacing={2} sx={{ p: 2 }}>
-            <Skeleton variant="text" height={40} />
-            <Skeleton variant="rectangular" height={120} />
-            <Skeleton variant="text" height={40} />
-          </Stack>
-        </DialogContent>
-      </Dialog>
+  const handleDayToggle = (day: string) => {
+    setSelectedDays((prev) =>
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
     );
-  }
-
+  };
   return (
     <Dialog
       open={open}
-      onClose={handleClose}
+      onClose={() => setOpen(false)}
       maxWidth="md"
       fullWidth
       aria-labelledby="create-session-dialog-title"
       PaperProps={{
-        component: 'form',
-        onSubmit: handleSubmit,
+        component: "form",
         sx: {
           borderRadius: 2,
           maxHeight: "90vh",
@@ -120,203 +77,138 @@ const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
         sx={{
           display: "flex",
           alignItems: "center",
-          gap: 1.5,
-          pb: 2,
         }}
       >
-        <SchoolIcon color="primary" />
         <Typography variant="h6" component="span" sx={{ flexGrow: 1 }}>
-          Create New Tutoring Session
+          Create Session
         </Typography>
-        <IconButton
-          aria-label="close dialog"
-          onClick={handleClose}
-          disabled={isSubmitting}
-          size="small"
-        >
-          <CloseIcon />
-        </IconButton>
       </DialogTitle>
-
-      <DialogContent dividers>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          Create a new tutoring session. Fill in all required fields marked with *.
-        </Typography>
-
-        {errors.submit && (
-          <Alert severity="error" sx={{ mb: 3 }}>
-            {errors.submit}
-          </Alert>
-        )}
-
-        <Stack spacing={3}>
-          {/* Basic Information */}
-          <Box>
-            <Typography variant="subtitle2" color="primary" gutterBottom>
-              Session Details
-            </Typography>
-
-            <Stack spacing={2.5}>
-              <TextField
-                label="Session Title"
-                name="title"
-                value={formData.title}
-                onChange={(e) => updateFormField('title', e.target.value)}
-                error={!!errors.title}
-                helperText={errors.title || characterCounts.title}
-                required
-                fullWidth
-                autoFocus
-                inputProps={{ maxLength: 100 }}
-              />
-
-              <TextField
-                label="Description"
-                name="description"
-                value={formData.description}
-                onChange={(e) => updateFormField('description', e.target.value)}
-                error={!!errors.description}
-                helperText={errors.description || characterCounts.description}
-                required
-                fullWidth
-                multiline
-                rows={3}
-                inputProps={{ maxLength: 500 }}
-              />
-
-              <TextField
-                label="Session Date & Time"
-                type="datetime-local"
-                value={formData.date ? formData.date.toISOString().slice(0, 16) : ""}
-                onChange={(e) => {
-                  updateFormField('date', e.target.value ? new Date(e.target.value) : null);
-                }}
-                error={!!errors.date}
-                helperText={errors.date}
-                required
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-                inputProps={{ min: minDateTime }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <CalendarIcon />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Stack>
-          </Box>
-
-          {/* Academic Information */}
-          <Box>
-            <Typography variant="subtitle2" color="primary" gutterBottom>
-              Academic Details
-            </Typography>
-
-            <Stack spacing={2.5}>
-              <TextField
-                select
-                label="Subject"
-                value={formData.subjectId}
-                onChange={(e) => updateFormField('subjectId', e.target.value)}
-                error={!!errors.subjectId}
-                helperText={errors.subjectId || (selectedSubject && `Selected: ${selectedSubject.title}`)}
-                required
-                fullWidth
-              >
-                <MenuItem value="">
-                  <em>Select a subject</em>
-                </MenuItem>
-                {subjectList.map((subject: Subject) => (
-                  <MenuItem key={subject.id} value={subject.id}>
-                    {subject.title}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Stack>
-          </Box>
-
-          {/* Session Configuration */}
-          <Box>
-            <Typography variant="subtitle2" color="primary" gutterBottom>
-              Session Configuration
-            </Typography>
-
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-              <TextField
-                label="Price per Student"
-                type="number"
-                value={formData.price}
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value);
-                  updateFormField('price', isNaN(value) ? 0 : Math.max(0, value));
-                }}
-                error={!!errors.price}
-                helperText={errors.price}
-                fullWidth
-                InputProps={{
-                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
-                  inputProps: { min: 0, step: 0.01, max: 10000 }
-                }}
-              />
-
-              <TextField
-                label="Duration (minutes)"
-                type="number"
-                value={formData.duration}
-                onChange={(e) => {
-                  const value = parseInt(e.target.value, 10);
-                  updateFormField('duration', isNaN(value) ? 60 : Math.max(1, value));
-                }}
-                error={!!errors.duration}
-                helperText={errors.duration || durationDisplay}
-                fullWidth
-                InputProps={{
-                  inputProps: { min: 1, max: 480, step: 15 }
-                }}
-              />
-
-              <TextField
-                label="Student Capacity"
-                type="number"
-                value={formData.capacity}
-                onChange={(e) => {
-                  const value = parseInt(e.target.value, 10);
-                  updateFormField('capacity', isNaN(value) ? 1 : Math.max(1, value));
-                }}
-                error={!!errors.capacity}
-                helperText={errors.capacity}
-                fullWidth
-                InputProps={{
-                  inputProps: { min: 1, max: 100 }
-                }}
-              />
-            </Stack>
-          </Box>
-        </Stack>
+      <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <TextField
+          size="small"
+          label="Description"
+          fullWidth
+        />
+        <TextField
+          size="small"
+          label="Duration (minutes)"
+          type="number"
+          fullWidth
+        />
+        <TextField
+          size="small"
+          label="Date"
+          type="datetime-local"
+          fullWidth
+          value={
+            hooks.formData.date
+              ? (() => {
+                const utcDate = new Date(hooks.formData.date);
+                const year = utcDate.getFullYear();
+                const month = String(utcDate.getMonth() + 1).padStart(2, "0");
+                const day = String(utcDate.getDate()).padStart(2, "0");
+                const hours = String(utcDate.getHours()).padStart(2, "0");
+                const minutes = String(utcDate.getMinutes()).padStart(2, "0");
+                return `${year}-${month}-${day}T${hours}:${minutes}`;
+              })()
+              : ""
+          }
+          onChange={(e) =>
+            hooks.setFormData((prev) => ({
+              ...prev,
+              date: new Date(e.target.value),
+            }))
+          }
+          InputLabelProps={{ shrink: true }}
+        />
+        <TextField
+          size="small"
+          label="Subject"
+          select
+          fullWidth
+          value={hooks.formData.subjectId || ""}
+          onChange={(e) =>
+            hooks.setFormData((prev) => ({
+              ...prev,
+              subjectId: e.target.value,
+            }))
+          }
+        >
+          {courseStore.selectedCourse?.subjects!.map((subject) => (
+            <MenuItem key={subject.id} value={subject.id}>
+              {subject.title}
+            </MenuItem>
+          ))}
+        </TextField>
       </DialogContent>
+       <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={multiple}
+              onChange={() => setMultiple((prev) => !prev)}
+            />
+          }
+          label="Create multiple sessions"
+        />
 
-      <DialogActions sx={{ px: 3, py: 2, gap: 1 }}>
-        <Button
-          onClick={handleClose}
-          disabled={isSubmitting}
-          color="inherit"
-          size="large"
-        >
-          Cancel
-        </Button>
-        <Button
-          type="submit"
-          variant="contained"
-          color="primary"
-          size="large"
-          onClick={submitForm}
-          startIcon={isSubmitting ? <CircularProgress size={18} /> : null}
-        >
-          {isSubmitting ? "Creating Session..." : "Create Session"}
-        </Button>
-      </DialogActions>
+        {multiple && 
+          <>
+            <FormLabel>Days of the week</FormLabel>
+            <FormGroup row>
+              {daysOfWeek.map((day) => (
+                <FormControlLabel
+                  key={day}
+                  control={
+                    <Checkbox
+                      checked={selectedDays.includes(day)}
+                      onChange={() => handleDayToggle(day)}
+                    />
+                  }
+                  label={day}
+                />
+              ))}
+            </FormGroup>
+
+            <Box display="flex" gap={2}>
+              <TextField
+                size="small"
+                label="Start Date"
+                type="date"
+                fullWidth
+                onChange={(e) =>
+                  hooks.setFormData((prev) => ({
+                    ...prev,
+                    startDate: e.target.value
+                  }))
+                }
+                InputLabelProps={{ shrink: true }}
+              />
+
+              <TextField
+                size="small"
+                label="End Date"
+                type="date"
+                fullWidth
+                onChange={(e) =>
+                  hooks.setFormData((prev) => ({
+                    ...prev,
+                    endDate: e.target.value
+                  }))
+                }
+                InputLabelProps={{ shrink: true }}
+              />
+            </Box>
+          </>}
+        <Box display="flex" justifyContent="flex-end" gap={2}>
+          <Button onClick={() => setOpen(false)} variant="outlined">
+            Cancel
+          </Button>
+          <Button type="submit" variant="contained">
+            Create
+          </Button>
+        </Box>
+      </DialogContent>
     </Dialog>
   );
 };

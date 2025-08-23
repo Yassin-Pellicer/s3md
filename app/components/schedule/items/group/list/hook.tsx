@@ -3,13 +3,16 @@ import { getGroupByCourseAction, getGroupsAction } from "@/app/server/management
 import { Group } from "@/app/types/Group";
 import { useEffect, useState } from "react";
 
+
 export function hooks() {
   const [openCreateGroupModal, setOpenCreateGroupModal] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<Group | undefined>(undefined);
-
+  
+  const selectedCourse = useCourseStore((state) => state.selectedCourse);
   useEffect(() => {
-   setSelectedGroup(undefined); 
-  }, [useCourseStore.getState().selectedCourse]);
+    console.log(selectedCourse?.id);
+    setSelectedGroup(undefined);
+  }, [selectedCourse?.id]);
 
   return {
     openCreateGroupModal,

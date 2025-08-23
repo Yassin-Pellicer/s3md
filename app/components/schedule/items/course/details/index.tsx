@@ -111,7 +111,7 @@ export function CourseDetails() {
             <button
               key={index}
               className={`w-full px-3 text-sm text-center hover:bg-gray-100 transition duration-75 ease-in-out 
-              hover:cursor-pointer py-2 items-center flex flex-row border-r border-r-gray-200 gap-1 justify-center ${detailsHook.selectedOption === name ? "border-b-3 border-blue-500" : ""}`}
+              hover:cursor-pointer py-2 items-center flex flex-row ${index !== 4 ? "border-r border-r-gray-200" : ""} gap-1 justify-center ${detailsHook.selectedOption === name ? "border-b-3 border-blue-500" : ""}`}
               onClick={() => detailsHook.setSelectedOption(name)}
             >
               <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>{icon}</span>
@@ -120,7 +120,7 @@ export function CourseDetails() {
           ))}
         </div>
       </div>
-      <div className="px-4 my-4">
+      <div className="m-4">
         {detailsHook.selectedOption === "Groups" && <GroupList></GroupList>}
         {detailsHook.selectedOption === "Subjects" && <SubjectList subjects={course?.subjects}></SubjectList>}
       </div>

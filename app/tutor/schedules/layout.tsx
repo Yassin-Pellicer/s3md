@@ -1,6 +1,6 @@
 "use client";
 import { CourseList } from "@/app/components/schedule/items/course/list";
-import { SessionList } from "@/app/components/schedule/items/session/list";
+import { SessionList } from "@/app/components/schedule/items/session/calendar";
 import { SubjectList } from "@/app/components/schedule/items/subject/list";
 
 export default function Home({

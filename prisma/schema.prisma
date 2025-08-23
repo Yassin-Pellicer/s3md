@@ -45,7 +45,7 @@ model Course {
   price            Int
   duration         Int
   subjects         Subject[]
-  tutor            Tutor?     @relation(fields: [tutorId], references: [id])
+  tutor            Tutor?    @relation(fields: [tutorId], references: [id])
   groups           Group[]
 }
 
@@ -61,20 +61,25 @@ model Group {
 
 model Session {
   id          String   @id @default(cuid())
+  seriesId    String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now())
-  title       String
-  description String
-  price       Int
+  description String?
   duration    Int
   date        DateTime
-  capacity    Int
   groupId     String
   subjectId   String
 
   group       Group         @relation(fields: [groupId], references: [id])
   subject     Subject       @relation(fields: [subjectId], references: [id])
   reservation Reservation[]
+}
+
+model Series {
+  id       String   @id @default(cuid())
+  days     String
+  startsAt DateTime
+  endsAt   DateTime
 }
 
 model Reservation {

@@ -12,12 +12,14 @@ import { useCourseStore } from "@/app/contexts/course.store";
 interface SessionFormData {
   title: string;
   description: string;
-  price: number;
   duration: number;
   date: Date | null;
-  capacity: number;
   groupId: string;
   subjectId: string;
+  // Repeat functionality
+  isRepeating: boolean;
+  repeatDays: number[]; // 0 = Sunday, 1 = Monday, etc.
+  repeatUntilDate: Date | null;
 }
 
 interface FormErrors {
@@ -29,21 +31,40 @@ interface FormErrors {
   capacity?: string;
   groupId?: string;
   subjectId?: string;
+  repeatDays?: string;
+  repeatUntilDate?: string;
   submit?: string;
 }
 
 const initialFormData: SessionFormData = {
   title: "",
   description: "",
-  price: 0,
   duration: 60,
   date: null,
-  capacity: 1,
   groupId: "",
   subjectId: "",
+  isRepeating: false,
+  repeatDays: [],
+  repeatUntilDate: null,
 };
 
-export function useSessionForm({ group }: { group?: Group | null }) {
+const DAYS_OF_WEEK = [
+  { value: 0, label: 'Sun' },
+  { value: 1, label: 'Mon' },
+  { value: 2, label: 'Tue' },
+  { value: 3, label: 'Wed' },
+  { value: 4, label: 'Thu' },
+  { value: 5, label: 'Fri' },
+  { value: 6, label: 'Sat' },
+];
+
+interface UseSessionFormProps {
+  group?: Group | null;
+  initialDateTime?: Date | null;
+  editingSession?: any; // For editing existing sessions
+}
+
+export function useSessionForm({ group, initialDateTime, editingSession }: UseSessionFormProps) {
   const [formData, setFormData] = useState<SessionFormData>(initialFormData);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,13 +75,32 @@ export function useSessionForm({ group }: { group?: Group | null }) {
   // Initialize data on mount or when group changes
   useEffect(() => {
     initializeData();
-    console.log("group changed");
-    setFormData(prev => ({ ...prev, groupId: group?.id || "" }));
-  }, [group, courseStore.selectedCourse]);
+    setFormData(prev => ({ 
+      ...prev, 
+      groupId: group?.id || "",
+      date: initialDateTime || prev.date
+    }));
+  }, [group, courseStore.selectedCourse, initialDateTime]);
 
+  // Load existing session data for editing
   useEffect(() => {
-    
-  })
+    if (editingSession) {
+      setFormData(prev => ({
+        ...prev,
+        title: editingSession.title || "",
+        description: editingSession.extendedProps?.description || "",
+        price: editingSession.extendedProps?.price || 0,
+        duration: editingSession.extendedProps?.duration || 60,
+        date: editingSession.start ? new Date(editingSession.start) : null,
+        capacity: editingSession.extendedProps?.capacity || 1,
+        subjectId: editingSession.extendedProps?.subjectId || "",
+        // For editing, we don't pre-populate repeat settings
+        isRepeating: false,
+        repeatDays: [],
+        repeatUntilDate: null,
+      }));
+    }
+  }, [editingSession]);
 
   const initializeData = async () => {
     setIsLoading(true);
@@ -73,6 +113,7 @@ export function useSessionForm({ group }: { group?: Group | null }) {
       setFormData(prev => ({
         ...prev,
         groupId: group?.id || "",
+        date: initialDateTime || prev.date
       }));
     } catch (error) {
       console.error("Failed to load initial data:", error);
@@ -86,20 +127,27 @@ export function useSessionForm({ group }: { group?: Group | null }) {
     setFormData({
       ...initialFormData,
       groupId: group?.id || "", // keep group auto-set
+      date: initialDateTime || null, // keep initial date if provided
     });
     setErrors({});
     setIsSubmitting(false);
-  }, [group]);
+  }, [group, initialDateTime]);
 
   const updateFormField = useCallback(
     <K extends keyof SessionFormData>(field: K, value: SessionFormData[K]) => {
       setFormData(prev => ({ ...prev, [field]: value }));
-      if (errors[field]) {
-        setErrors(prev => ({ ...prev, [field]: undefined }));
-      }
     },
     [errors]
   );
+
+  const toggleRepeatDay = useCallback((dayValue: number) => {
+    setFormData(prev => ({
+      ...prev,
+      repeatDays: prev.repeatDays.includes(dayValue)
+        ? prev.repeatDays.filter(d => d !== dayValue)
+        : [...prev.repeatDays, dayValue].sort()
+    }));
+  }, []);
 
   const validateForm = useCallback((): boolean => {
     const newErrors: FormErrors = {};
@@ -130,48 +178,108 @@ export function useSessionForm({ group }: { group?: Group | null }) {
       newErrors.groupId = "Group is required";
     }
 
-    if (formData.price < 0) {
-      newErrors.price = "Price cannot be negative";
-    } else if (formData.price > 10000) {
-      newErrors.price = "Price seems unusually high";
-    }
-
     if (formData.duration <= 0) {
       newErrors.duration = "Duration must be greater than 0";
     } else if (formData.duration > 480) {
       newErrors.duration = "Duration cannot exceed 8 hours (480 minutes)";
     }
 
-    if (formData.capacity <= 0) {
-      newErrors.capacity = "Capacity must be at least 1";
-    } else if (formData.capacity > 100) {
-      newErrors.capacity = "Capacity cannot exceed 100 students";
+    // Repeat validation
+    if (formData.isRepeating) {
+      if (formData.repeatDays.length === 0) {
+        newErrors.repeatDays = "Select at least one day to repeat";
+      }
+      
+      if (!formData.repeatUntilDate) {
+        newErrors.repeatUntilDate = "End date is required for repeating sessions";
+      } else if (formData.repeatUntilDate <= new Date()) {
+        newErrors.repeatUntilDate = "End date must be in the future";
+      } else if (formData.date && formData.repeatUntilDate <= formData.date) {
+        newErrors.repeatUntilDate = "End date must be after the start date";
+      }
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }, [formData]);
 
-  const submitForm = useCallback(async (): Promise<void> => {
+  // Generate session dates based on repeat settings
+  const generateSessionDates = useCallback((): Date[] => {
+    if (!formData.date || !formData.isRepeating || !formData.repeatUntilDate) {
+      return formData.date ? [formData.date] : [];
+    }
 
+    const dates: Date[] = [];
+    const startDate = new Date(formData.date);
+    const endDate = new Date(formData.repeatUntilDate);
+    
+    // Always include the initial date
+    dates.push(new Date(startDate));
+    
+    // Generate recurring dates
+    const currentDate = new Date(startDate);
+    currentDate.setDate(currentDate.getDate() + 1); // Start from next day
+    
+    while (currentDate <= endDate) {
+      const dayOfWeek = currentDate.getDay();
+      if (formData.repeatDays.includes(dayOfWeek)) {
+        const sessionDate = new Date(currentDate);
+        sessionDate.setHours(startDate.getHours());
+        sessionDate.setMinutes(startDate.getMinutes());
+        sessionDate.setSeconds(0);
+        sessionDate.setMilliseconds(0);
+        dates.push(sessionDate);
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    return dates;
+  }, [formData]);
+
+  const submitForm = useCallback(async (): Promise<void> => {
     console.log("submitForm", formData);
+
+    if (!validateForm()) {
+      throw new Error("Please fix form errors");
+    }
 
     setIsSubmitting(true);
     setErrors({});
 
     try {
-      await uploadSessionAction(formData);
+      const sessionDates = generateSessionDates();
+      
+      if (sessionDates.length === 0) {
+        throw new Error("No valid session dates generated");
+      }
+
+      // Create sessions for each date
+      const sessionPromises = sessionDates.map(sessionDate => {
+        const sessionData = {
+          ...formData,
+          date: sessionDate,
+          // Remove repeat-specific fields from individual sessions
+          isRepeating: undefined,
+          repeatDays: undefined,
+          repeatUntilDate: undefined,
+        };
+        return uploadSessionAction(sessionData);
+      });
+
+      await Promise.all(sessionPromises);
+
+      console.log(`Created ${sessionDates.length} sessions`);
     } catch (error) {
       const errorMessage = error instanceof Error 
         ? error.message 
-        : "Failed to create session. Please try again.";
+        : "Failed to create session(s). Please try again.";
       
       setErrors({ submit: errorMessage });
       throw error;
     } finally {
       setIsSubmitting(false);
     }
-  }, [formData, validateForm]);
+  }, [formData, validateForm, generateSessionDates]);
 
   const selectedSubject = useMemo(() => 
     subjectList.find(s => s.id === formData.subjectId),
@@ -185,6 +293,13 @@ export function useSessionForm({ group }: { group?: Group | null }) {
     now.setHours(now.getHours() + 1);
     return now.toISOString().slice(0, 16);
   }, []);
+
+  const minRepeatUntilDate = useMemo(() => {
+    if (!formData.date) return minDateTime;
+    const minDate = new Date(formData.date);
+    minDate.setDate(minDate.getDate() + 1);
+    return minDate.toISOString().slice(0, 10);
+  }, [formData.date, minDateTime]);
 
   const durationDisplay = useMemo(() => 
     `${Math.floor(formData.duration / 60)}h ${formData.duration % 60}m`,
@@ -200,6 +315,15 @@ export function useSessionForm({ group }: { group?: Group | null }) {
     return subjectList.length > 0 && !!formData.groupId;
   }, [subjectList, formData.groupId]);
 
+  const sessionPreview = useMemo(() => {
+    const dates = generateSessionDates();
+    return {
+      totalSessions: dates.length,
+      dates: dates.slice(0, 5), // Show first 5 dates as preview
+      hasMore: dates.length > 5
+    };
+  }, [generateSessionDates]);
+
   return {
     formData,
     errors,
@@ -210,10 +334,15 @@ export function useSessionForm({ group }: { group?: Group | null }) {
     selectedSubject,
     selectedGroup,
     minDateTime,
+    minRepeatUntilDate,
     durationDisplay,
     characterCounts,
     isFormReady,
+    sessionPreview,
+    DAYS_OF_WEEK,
     updateFormField,
+    toggleRepeatDay,
+    setFormData,
     submitForm,
     resetForm,
     validateForm,

@@ -17,7 +17,7 @@ export function hooks(subjectsProp?: Subject[]) {
     } else {
       fetchContent();
     }
-  }, [subjectsProp]); 
+  }, []); 
 
   return {
     subjects,

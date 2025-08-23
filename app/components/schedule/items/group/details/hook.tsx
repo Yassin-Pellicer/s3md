@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 
 export function hooks() {
   const [sessions, setSessions] = useState<Session[]>([]);
-  const [openCreateSessionModal, setOpenCreateSessionModal] = useState(false);
   const [selectedOption, setSelectedOption] = useState<String>("Students");
 
   useEffect(() => {
@@ -22,7 +21,5 @@ export function hooks() {
     setSessions,
     selectedOption,
     setSelectedOption,
-    openCreateSessionModal,
-    setOpenCreateSessionModal
   };
 }
