@@ -41,3 +41,11 @@ export async function getSessionsAction() {
 export async function uploadSessionAction(data: any) {
   return await managementServices.createSession(data);
 }
+
+export async function uploadSeriesAction(data: any) {
+  return await managementServices.createSeries(data);
+}
+
+export async function getSeriesByIdAction(id: string) {
+  return await managementServices.getSeries(id);
+}

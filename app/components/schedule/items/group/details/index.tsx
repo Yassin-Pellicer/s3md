@@ -53,7 +53,7 @@ export function GroupDetails({ group }: { group?: Group | null }) {
           ))}
         </div>
       </div>}
-        {sessionHooks.selectedOption === "Sessions" && <SessionList group={group} ></SessionList>}
+        {sessionHooks.selectedOption === "Sessions" && <SessionList groups={[group!]} ></SessionList>}
     </div>
   );
 }

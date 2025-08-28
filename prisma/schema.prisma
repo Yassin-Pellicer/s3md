@@ -77,9 +77,10 @@ model Session {
 
 model Series {
   id       String   @id @default(cuid())
-  days     String
+  days     String[]
   startsAt DateTime
   endsAt   DateTime
+  repeats Boolean @default(true)
 }
 
 model Reservation {

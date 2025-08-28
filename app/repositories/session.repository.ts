@@ -1,4 +1,4 @@
-import prisma from '../prisma/client';
+import prisma from "../prisma/client";
 
 export class SessionRepository {
   getAll() {
@@ -9,7 +9,19 @@ export class SessionRepository {
     return prisma.session.findUnique({ where: { id } });
   }
 
-  create(data: any) {
+  async create(data: any) {
+    if (data?.id) {
+      const existingSession = await prisma.session.findUnique({
+        where: { id: data.id },
+      });
+
+      if (existingSession) {
+        return prisma.session.update({
+          where: { id: data.id },
+          data,
+        });
+      }
+    }
     return prisma.session.create({ data });
   }
 

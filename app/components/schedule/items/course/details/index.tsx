@@ -2,12 +2,12 @@ import { useCourseStore } from "@/app/contexts/course.store";
 import { SubjectList } from "../../subject/list";
 import { GroupList } from "../../group/list";
 import { hooks } from "./hook";
+import { SessionList } from "../../session/calendar";
 
 export function CourseDetails() {
   const courseStore = useCourseStore();
   const course = courseStore.selectedCourse;
   const detailsHook = hooks();
-
   return (
     <div className="flex flex-col">
       <div
@@ -123,6 +123,7 @@ export function CourseDetails() {
       <div className="m-4">
         {detailsHook.selectedOption === "Groups" && <GroupList></GroupList>}
         {detailsHook.selectedOption === "Subjects" && <SubjectList subjects={course?.subjects}></SubjectList>}
+        {detailsHook.selectedOption === "Schedule" && <SessionList groups={course?.groups}></SessionList>}
       </div>
     </div>
   );

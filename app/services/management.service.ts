@@ -3,6 +3,7 @@ import subjectRepository from "../repositories/subject.repository";
 import courseRepository from "../repositories/course.repository";
 import sessionRepository from "../repositories/session.repository";
 import groupRepository from "../repositories/group.repository";
+import seriesRepository from "../repositories/series.repository";
 
 export class managementService {
 
@@ -43,6 +44,14 @@ export class managementService {
 
   async createSession(data: any) {
     return await sessionRepository.create(data);
+  }
+
+  async createSeries(data: any) {
+    return await seriesRepository.create(data);
+  }
+
+  async getSeries(id: string) {
+    return await seriesRepository.getById(id);
   }
 }
 

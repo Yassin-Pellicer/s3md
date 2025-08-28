@@ -7,8 +7,8 @@ import { Group } from "@/app/types/Group";
 import CreateSessionModal from "../modal/create";
 import { hooks } from "./hook";
 
-export function SessionList({ group }: { group: Group | null }) {
-  const calendarHooks = hooks({ group });
+export function SessionList({ groups }: { groups: Group[] | undefined }) {
+  const calendarHooks = hooks({ groups });
   return (
     <div className="">
       <FullCalendar
@@ -30,7 +30,7 @@ export function SessionList({ group }: { group: Group | null }) {
           start: new Date().toISOString().split("T")[0] + "T00:00:00",
         }}
         dateClick={(info) => calendarHooks.handleClick(info.date)}
-        select={(info) => calendarHooks.handleClick(info.start)}
+        eventClick={(info) => calendarHooks.handleEdit(info)}
         eventContent={(arg) => {
           const { event } = arg;
           const session = (event.extendedProps as any).session || (event as any).session;
@@ -51,7 +51,7 @@ export function SessionList({ group }: { group: Group | null }) {
                   className="text-[10px] text-ellipsis line-clamp-2"
                   title={session.subject?.description}
                 >
-                  {group?.title && `${group.title}: `}
+                  {session?.title && `${groups?.find((g) => g.id === session.groupId)?.title}: `}
                   {session.subject?.description}
                 </span>
               )}
@@ -66,8 +66,9 @@ export function SessionList({ group }: { group: Group | null }) {
       <CreateSessionModal
         open={calendarHooks.openCreateModal}
         setOpen={calendarHooks.setOpenCreateModal}
-        group={group}
+        group={calendarHooks.selectedGroup}
         initialDateTime={calendarHooks.selectedDateTime}
+        session={calendarHooks.selectedSession}
       />
     </div>
   );

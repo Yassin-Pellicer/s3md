@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 export function hooks() {
-  const [selectedOption, setSelectedOption] = useState<string>("Schedule");  
+  const [selectedOption, setSelectedOption] = useState<string>("");  
 
   return {
     selectedOption,

@@ -3,27 +3,17 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
   TextField,
   Button,
-  Stack,
   MenuItem,
-  IconButton,
   Typography,
   Box,
-  InputAdornment,
-  Alert,
-  CircularProgress,
-  Skeleton,
   FormControlLabel,
   Switch,
-  Chip,
-  Card,
-  CardContent,
-  Collapse,
   FormLabel,
   FormGroup,
   Checkbox,
+  Alert,
 } from "@mui/material";
 
 import { useSessionForm } from "./hook";
@@ -38,6 +28,7 @@ const CreateSessionModal = ({
   group,
   initialDateTime,
   editingSession,
+  session,
 }: {
   open: boolean;
   setOpen: (open: boolean) => void;
@@ -45,18 +36,31 @@ const CreateSessionModal = ({
   group?: Group | null;
   initialDateTime?: Date | null;
   editingSession?: any;
+  session?: any;
 }) => {
-  const hooks = useSessionForm({ group, initialDateTime, editingSession });
+  const hooks = useSessionForm({ group, initialDateTime, editingSession, session });
   const courseStore = useCourseStore();
-    const [multiple, setMultiple] = useState(false);
-  const [selectedDays, setSelectedDays] = useState<string[]>([]);
-const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-  const handleDayToggle = (day: string) => {
-    setSelectedDays((prev) =>
-      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
-    );
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    console.log("Form submitted with data:", hooks.formData.session);
+
+    try {
+      await hooks.handleSubmit();
+      console.log("Session creation successful");
+      setOpen(false);
+      onSuccess?.();
+    } catch (error) {
+      console.error("Session creation failed:", error);
+      // Error is already handled in the hook
+    }
   };
+
+  // Debug form data changes
+  useEffect(() => {
+    console.log("Form data updated:", hooks.formData);
+  }, [hooks.formData]);
+
   return (
     <Dialog
       open={open}
@@ -66,6 +70,7 @@ const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
       aria-labelledby="create-session-dialog-title"
       PaperProps={{
         component: "form",
+        onSubmit: handleSubmit,
         sx: {
           borderRadius: 2,
           maxHeight: "90vh",
@@ -84,31 +89,60 @@ const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
         </Typography>
       </DialogTitle>
       <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        {hooks.errors?.submit && (
+          <Alert severity="error">{hooks.errors.submit}</Alert>
+        )}
+
         <TextField
           size="small"
           label="Description"
           fullWidth
+          required
+          value={hooks.formData.session?.description || ""}
+          onChange={(e) =>
+            hooks.setFormData((prev) => ({
+              ...prev,
+              session: {
+                ...prev.session,
+                description: e.target.value,
+              },
+            }))
+          }
+          error={!!hooks.errors?.description}
+          helperText={hooks.errors?.description}
         />
         <TextField
           size="small"
           label="Duration (minutes)"
           type="number"
           fullWidth
+          required
+          value={hooks.formData.session?.duration || 60}
+          onChange={(e) =>
+            hooks.setFormData((prev) => ({
+              ...prev,
+              session: {
+                ...prev.session,
+                duration: parseInt(e.target.value) || 0,
+              },
+            }))
+          }
         />
         <TextField
           size="small"
           label="Date"
           type="datetime-local"
           fullWidth
+          required
           value={
-            hooks.formData.date
+            hooks.formData.session?.date
               ? (() => {
-                const utcDate = new Date(hooks.formData.date);
-                const year = utcDate.getFullYear();
-                const month = String(utcDate.getMonth() + 1).padStart(2, "0");
-                const day = String(utcDate.getDate()).padStart(2, "0");
-                const hours = String(utcDate.getHours()).padStart(2, "0");
-                const minutes = String(utcDate.getMinutes()).padStart(2, "0");
+                const date = new Date(hooks.formData.session.date);
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, "0");
+                const day = String(date.getDate()).padStart(2, "0");
+                const hours = String(date.getHours()).padStart(2, "0");
+                const minutes = String(date.getMinutes()).padStart(2, "0");
                 return `${year}-${month}-${day}T${hours}:${minutes}`;
               })()
               : ""
@@ -116,53 +150,102 @@ const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
           onChange={(e) =>
             hooks.setFormData((prev) => ({
               ...prev,
-              date: new Date(e.target.value),
+              session: {
+                ...prev.session,
+                date: new Date(e.target.value),
+              },
             }))
           }
           InputLabelProps={{ shrink: true }}
+          error={!!hooks.errors?.date}
+          helperText={hooks.errors?.date}
         />
+        {!group && <TextField
+          size="small"
+          label="Group"
+          select
+          fullWidth
+          required
+          value={hooks.formData.session?.groupId || ""}
+          onChange={(e) =>
+            hooks.setFormData((prev) => ({
+              ...prev,
+              session: {
+                ...prev.session,
+                groupId: e.target.value,
+              },
+            }))
+          }
+          error={!!hooks.errors?.subjectId}
+          helperText={hooks.errors?.subjectId}
+        >
+          {courseStore.selectedCourse?.groups?.map((group) => (
+            <MenuItem key={group.id} value={group.id}>
+              {group.title}
+            </MenuItem>
+          )) || []}
+        </TextField>}
         <TextField
           size="small"
           label="Subject"
           select
           fullWidth
-          value={hooks.formData.subjectId || ""}
+          required
+          value={hooks.formData.session?.subjectId || ""}
           onChange={(e) =>
             hooks.setFormData((prev) => ({
               ...prev,
-              subjectId: e.target.value,
+              session: {
+                ...prev.session,
+                subjectId: e.target.value,
+              },
             }))
           }
+          error={!!hooks.errors?.subjectId}
+          helperText={hooks.errors?.subjectId}
         >
-          {courseStore.selectedCourse?.subjects!.map((subject) => (
+          {courseStore.selectedCourse?.subjects?.map((subject) => (
             <MenuItem key={subject.id} value={subject.id}>
               {subject.title}
             </MenuItem>
-          ))}
+          )) || []}
         </TextField>
-      </DialogContent>
-       <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+
         <FormControlLabel
           control={
             <Switch
-              checked={multiple}
-              onChange={() => setMultiple((prev) => !prev)}
+              checked={hooks.formData.series?.repeats || false}
+              onChange={(e) => {
+                console.log("Repeating switch changed:", e.target.checked);
+                hooks.setFormData((prev) => ({
+                  ...prev,
+                  series: {
+                    ...prev.series,
+                    repeats: e.target.checked,
+                  },
+                }));
+              }}
             />
           }
           label="Create multiple sessions"
         />
 
-        {multiple && 
+        {hooks.formData.series?.repeats && (
           <>
-            <FormLabel>Days of the week</FormLabel>
+            <FormLabel error={!!hooks.errors?.repeatDays}>
+              Days of the week {hooks.errors?.repeatDays && `- ${hooks.errors.repeatDays}`}
+            </FormLabel>
             <FormGroup row>
-              {daysOfWeek.map((day) => (
+              {hooks.daysOfWeek.map((day) => (
                 <FormControlLabel
                   key={day}
                   control={
                     <Checkbox
-                      checked={selectedDays.includes(day)}
-                      onChange={() => handleDayToggle(day)}
+                      checked={hooks.formData.series?.days?.includes(day) || false}
+                      onChange={() => {
+                        console.log("Day toggled:", day);
+                        hooks.handleDayToggle(day);
+                      }}
                     />
                   }
                   label={day}
@@ -170,42 +253,43 @@ const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
               ))}
             </FormGroup>
 
-            <Box display="flex" gap={2}>
-              <TextField
-                size="small"
-                label="Start Date"
-                type="date"
-                fullWidth
-                onChange={(e) =>
-                  hooks.setFormData((prev) => ({
-                    ...prev,
-                    startDate: e.target.value
-                  }))
-                }
-                InputLabelProps={{ shrink: true }}
-              />
+            <TextField
+              size="small"
+              label="Repeat Until Date"
+              type="date"
+              fullWidth
+              required
+              value={
+                hooks.formData.series?.endsAt
+                  ? hooks.formData.series.endsAt.toISOString().split('T')[0]
+                  : ""
+              }
+              onChange={(e) => {
+                console.log("Repeat until date changed:", e.target.value);
+                hooks.setFormData((prev) => ({
+                  ...prev,
+                  series: {
+                    ...prev.series,
+                    endsAt: e.target.value ? new Date(e.target.value) : null,
+                  },
+                }));
+              }}
+              InputLabelProps={{ shrink: true }}
+              error={!!hooks.errors?.repeatUntilDate}
+              helperText={hooks.errors?.repeatUntilDate}
+            />
+          </>
+        )}
 
-              <TextField
-                size="small"
-                label="End Date"
-                type="date"
-                fullWidth
-                onChange={(e) =>
-                  hooks.setFormData((prev) => ({
-                    ...prev,
-                    endDate: e.target.value
-                  }))
-                }
-                InputLabelProps={{ shrink: true }}
-              />
-            </Box>
-          </>}
         <Box display="flex" justifyContent="flex-end" gap={2}>
           <Button onClick={() => setOpen(false)} variant="outlined">
             Cancel
           </Button>
-          <Button type="submit" variant="contained">
-            Create
+          <Button
+            type="submit"
+            variant="contained"
+          >
+            {session ? "Update Session" : "Create Session"}
           </Button>
         </Box>
       </DialogContent>
